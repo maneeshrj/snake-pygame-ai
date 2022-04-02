@@ -15,8 +15,8 @@ import pygame, sys, time, random
 difficulty = 25
 
 # Window size
-frame_size_x = 720
-frame_size_y = 480
+frame_size_x = 200
+frame_size_y = 100
 
 # Checks for errors encountered
 check_errors = pygame.init()
@@ -93,6 +93,7 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        
         # Whenever a key is pressed down
         elif event.type == pygame.KEYDOWN:
             # W -> Up; S -> Down; A -> Left; D -> Right
@@ -167,4 +168,4 @@ while True:
     # Refresh game screen
     pygame.display.update()
     # Refresh rate
-    fps_controller.tick(difficulty)
+    fps_controller.tick(5)
