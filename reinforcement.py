@@ -1,18 +1,70 @@
 from Snake import Snake, Game
+import random
+from math import sqrt
 
-def generateActions():
-    actions = []
-    actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'LEFT', 'UP', 'UP','UP','UP','UP']
+def generateFixedActions():
+    actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'DOWN', 'DOWN', 'LEFT', 'LEFT','LEFT','LEFT', 'UP','UP','UP','UP']
+    #actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'LEFT', 'UP','UP','UP','UP','UP']
+    #actions = ['RIGHT']*63
     return actions
 
+def distance(a, b):
+    return sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
+
+class ReflexAgent:
+    def __init__(self, snake, env):
+        self.snake = snake
+        self.env = env
+    
+    def getNextAction(self):
+        validActions = self.snake.get_valid_actions()
+        currentPos = self.snake.pos
+        foodPos = self.env.food_pos
+        newPos = None
+        bestDist, bestAction = float('inf'), None
+        for action in validActions:
+            newPos = [self.snake.pos[0][0], self.snake.pos[0][1]] 
+            if action == 'UP':
+                newPos = [self.snake.pos[0][0], self.snake.pos[0][1] - 10] 
+            if action == 'DOWN':
+                newPos = [self.snake.pos[0][0], self.snake.pos[0][1] + 10] 
+            if action == 'LEFT':
+                newPos = [self.snake.pos[0][0] - 10, self.snake.pos[0][1]] 
+            if action == 'RIGHT':
+                newPos = [self.snake.pos[0][0] + 10, self.snake.pos[0][1]] 
+            if action == 'CONTINUE':
+                newPos = self.snake.pos[0]
+
+            if distance(newPos, foodPos) < bestDist:
+                bestDist = distance(newPos, foodPos)
+                bestAction = action
+                
+        return bestAction
+
+
+### DEFINED AGENTS:
+reflexAgent = lambda snake, env : ReflexAgent(snake, env)
+
+def getAgentName(agent):
+    if agent==reflexAgent:
+        return 'Simple Reflex Agent'
+    return 'unknown agent'
+
 if __name__ == "__main__":
-    agent = Snake()
-    environment = Game(agent)
-    for action in generateActions():
-        is_over, score = environment.play_step(action)
-        print(is_over)
+    snake = Snake()
+    env = Game(snake)
+    agent = ReflexAgent(snake, env)
+    
+    timestep = 0
+    while True:
+        timestep += 1
+        if (timestep % 50) == 0:
+            print('step', timestep)
+        action = agent.getNextAction()
+        is_over, score = env.play_step(action)
+        # print(is_over)
         if is_over:
             print("Game Over")
-            environment.game_over()
+            print("Score: ", score)
+            env.game_over()
             break
-    print("Score: ", score)
