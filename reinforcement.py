@@ -2,7 +2,7 @@ from Snake import Snake, Game
 
 def generateActions():
     actions = []
-    actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'LEFT',  'UP', 'UP','UP','UP','UP',]
+    actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'LEFT', 'UP', 'UP','UP','UP','UP']
     return actions
 
 if __name__ == "__main__":

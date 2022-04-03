@@ -59,12 +59,14 @@ class Game:
         if self.first_step:
             self.first_step = False
         else:
-            self.move_snake(action)
+            # duplicate head
             self.snake.pos.insert(0, list(self.snake.pos[0]))
-
+            # update head
+            self.move_snake(action)
+            
         # Check if snake has eaten the food
-        
-        self.snake.pos.insert(0, list(self.snake.pos[0]))
+        print('pos', self.snake.pos)
+
         if self.snake.pos[0] == self.food_pos:
             self.score += 1
             self.food_spawn = False
@@ -83,8 +85,8 @@ class Game:
             is_over = True
         if self.snake.pos[0][1] < 0 or self.snake.pos[0][1] > self.frame_size_y-10:
             is_over = True
-        # Touching the snake body
 
+        # Touching the snake body
         for block in self.snake.pos[1:]:
             if self.snake.pos[0] == block:
                 is_over = True
