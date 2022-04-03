@@ -1,5 +1,5 @@
 {
     "useGraphics": false,
-    "testRuns": 10,
+    "testRuns": 1000,
     "displayEachRun": false
 }

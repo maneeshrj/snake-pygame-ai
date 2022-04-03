@@ -11,6 +11,20 @@ def generateFixedActions():
 def distance(a, b):
     return sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
 
+# RANDOM AGENT
+# At each time step, randomly picks an action from the valid choices.
+class RandomAgent:
+    def __init__(self, snake, env):
+        self.snake = snake
+        self.env = env
+    
+    def getNextAction(self):
+        validActions = self.snake.get_valid_actions()
+        return random.choice(validActions)
+
+# REFLEX AGENT
+# At each time step, takes the action that most decreases the distance
+# between the head of the snake and the food.
 class ReflexAgent:
     def __init__(self, snake, env):
         self.snake = snake
@@ -37,15 +51,17 @@ class ReflexAgent:
 
             if distance(newPos, foodPos) < bestDist:
                 bestDist = distance(newPos, foodPos)
-                bestAction = action
-                
+                bestAction = action                
         return bestAction
 
 
 ### DEFINED AGENTS:
+randomAgent = lambda snake, env : RandomAgent(snake, env)
 reflexAgent = lambda snake, env : ReflexAgent(snake, env)
 
 def getAgentName(agent):
+    if agent==randomAgent:
+        return 'Random Agent'
     if agent==reflexAgent:
         return 'Simple Reflex Agent'
     return 'unknown agent'

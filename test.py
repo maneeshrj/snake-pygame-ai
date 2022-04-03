@@ -7,12 +7,11 @@ import numpy as np
 import json
 
 if __name__ == "__main__":
-    settings = dict()
     readFromJson = True
     useGraphics = False
     testRuns = 1
     verbose = False
-    agents = [rl.reflexAgent]
+    agents = [rl.randomAgent, rl.reflexAgent]
 
     # print(f"Arguments count: {len(sys.argv)}")
     for i, arg in enumerate(sys.argv):
@@ -67,6 +66,6 @@ if __name__ == "__main__":
         print("Average game:\t\t", np.mean(gameLengths), "timesteps")
         print("Average score:\t\t", np.mean(gameScores))
         print("Min/Max score:\t\t", min(gameScores),'/',max(gameScores))
-    print('='*40)
+        print('='*40)
     print()
     
