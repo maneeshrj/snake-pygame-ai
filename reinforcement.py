@@ -63,7 +63,7 @@ def getAgentName(agent):
     if agent==randomAgent:
         return 'Random Agent'
     if agent==reflexAgent:
-        return 'Simple Reflex Agent'
+        return 'Reflex Agent'
     return 'unknown agent'
 
 if __name__ == "__main__":

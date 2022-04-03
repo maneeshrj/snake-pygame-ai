@@ -33,6 +33,8 @@ if __name__ == "__main__":
             testRuns = settings['testRuns']
             verbose = settings['displayEachRun']
 
+    avgGameLengths, avgGameScores = [], []
+    
     for agentType in agents:
         print()
         print('='*40) 
@@ -60,11 +62,13 @@ if __name__ == "__main__":
                     env.game_over()
 
         elapsedTime = round((time.time() - startTime) / 60,2)
+        avgGameLengths.append(round(np.mean(gameLengths), 3))
+        avgGameScores.append(round(np.mean(gameScores), 3))
+        
         print('-'*40)
-        print("Testing complete:")
         print(testRuns, "test runs completed in", elapsedTime, "mins")
-        print("Average game:\t\t", np.mean(gameLengths), "timesteps")
-        print("Average score:\t\t", np.mean(gameScores))
+        print("Average game:\t\t", avgGameLengths[-1], "timesteps")
+        print("Average score:\t\t", avgGameScores[-1])
         print("Min/Max score:\t\t", min(gameScores),'/',max(gameScores))
         print('='*40)
     print()
