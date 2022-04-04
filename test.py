@@ -7,7 +7,7 @@ import numpy as np
 import json
 
 if __name__ == "__main__":
-    readFromJson = True
+    readFromJson = False
     useGraphics = False
     testRuns = 1
     verbose = False

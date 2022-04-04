@@ -1,7 +1,7 @@
 """
 Adapted from code provided for a homework in CS:4420 Artificial Intelligence at UIowa.
 """
-import util
+import Counter
 
 class ValueEstimationAgent():
     """
@@ -32,7 +32,7 @@ class ValueEstimationAgent():
         """
         Should return Q(state,action)
         """
-        util.raiseNotDefined()
+        Counter.raiseNotDefined()
 
     def getValue(self, state):
         """
@@ -41,7 +41,7 @@ class ValueEstimationAgent():
 
         V(s) = max_{a in actions} Q(s,a)
         """
-        util.raiseNotDefined()
+        Counter.raiseNotDefined()
 
     def getPolicy(self, state):
         """
@@ -54,14 +54,14 @@ class ValueEstimationAgent():
         If many actions achieve the maximal Q-value,
         it doesn't matter which is selected.
         """
-        util.raiseNotDefined()
+        Counter.raiseNotDefined()
 
     def getAction(self, state):
         """
         state: can call state.getLegalActions()
         Choose an action and return it.
         """
-        util.raiseNotDefined()
+        Counter.raiseNotDefined()
 
 class ReinforcementAgent(ValueEstimationAgent):
     """
@@ -85,7 +85,7 @@ class ReinforcementAgent(ValueEstimationAgent):
             This class will call this function, after
             observing a transition and reward
         """
-        util.raiseNotDefined()
+        Counter.raiseNotDefined()
 
     ####################################
     #    Read These Functions          #

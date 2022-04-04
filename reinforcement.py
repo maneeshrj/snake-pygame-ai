@@ -1,6 +1,7 @@
 from Snake import Snake, Game
 import random
 from math import sqrt
+import Counter
 
 def generateFixedActions():
     actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'DOWN', 'DOWN', 'LEFT', 'LEFT','LEFT','LEFT', 'UP','UP','UP','UP']
@@ -59,10 +60,20 @@ class ApproxQAgent:
     def __init__(self, snake, env):
         self.snake = snake
         self.env = env
+        self.counter = Counter.Counter()
     
     def getNextAction(self):
-        validActions = self.snake.get_valid_actions()
-        return random.choice(validActions)
+        # validActions = self.snake.get_valid_actions()
+        # return random.choice(validActions)
+        pass
+    # Implement approximative Q-learning
+    def getQValue(self, state, action):
+        pass
+    def update(self, state, action, nextState, reward):
+        pass
+
+    def rewards(self):
+        pass
     
 
 ### DEFINED AGENTS:
