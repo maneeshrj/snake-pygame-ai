@@ -18,6 +18,39 @@ class Snake:
             return ['LEFT', 'RIGHT', 'CONTINUE']
         elif self.direction == 'LEFT'or self.direction == 'RIGHT':
             return ['UP', 'DOWN', 'CONTINUE']
+        
+    def move_snake(self, direction):
+        if direction != 'CONTINUE':
+            self.direction = direction
+        if self.direction == 'UP':
+            self.pos[0][1] -= 10
+        if self.direction == 'DOWN':
+            self.pos[0][1] += 10
+        if self.direction == 'LEFT':
+            self.pos[0][0] -= 10
+        if self.direction == 'RIGHT':
+            self.pos[0][0] += 10
+
+class GameState:
+    def __init__(self, snake, score, foodPos):
+        self.snakeCopy = Snake(pos=snake.pos, direction=snake.direction)
+        self.score = score
+        self.foodPos = foodPos
+    
+    def getSnakePosition(self):
+        return self.snake.pos
+    
+    def getSnakeDirection(self):
+        return self.snake.direction
+    
+    def getValidActions(self):
+        return self.snake.get_valid_actions()
+    
+    def reachedFood(self):
+        return self.snake.pos[0] == self.foodPos
+    
+    def takeAction(self, action):
+        self.snakeCopy.move_snake(action)
 
 class Game:
     def __init__(self, snake, graphics=False):
@@ -60,7 +93,7 @@ class Game:
         # duplicate head
         self.snake.pos.insert(0, list(self.snake.pos[0]))
         # update head
-        self.move_snake(action)
+        self.snake.move_snake(action)
         
         # Check if snake has eaten the food
         if self.snake.pos[0] == self.food_pos:
@@ -136,19 +169,21 @@ class Game:
         else:
             score_rect.midtop = (self.frame_size_x/2, self.frame_size_y/1.25)
         self.game_window.blit(score_surface, score_rect)
-
-    def move_snake(self, direction):
-        if direction != 'CONTINUE':
-            self.snake.direction = direction
-            
-        if self.snake.direction == 'UP':
-            self.snake.pos[0][1] -= 10
-        if self.snake.direction == 'DOWN':
-            self.snake.pos[0][1] += 10
-        if self.snake.direction == 'LEFT':
-            self.snake.pos[0][0] -= 10
-        if self.snake.direction == 'RIGHT':
-            self.snake.pos[0][0] += 10
+    
+    # Helper functions for feature extraction
+    def getCurrentState(self):
+        return GameState(self.snake, self.score, self.food_pos)
+    
+    def getNextState(self, action):
+        currState = self.getCurrentState()
+        currState.takeAction(action)
+        return currState
+    
+    def getReward(self, action):
+        nextState = self.getNextState(action)
+        if(nextState.reachedFood()):
+            return 1.0
+        return 0.0
 
 if __name__ == '__main__':
     snake = Snake()
