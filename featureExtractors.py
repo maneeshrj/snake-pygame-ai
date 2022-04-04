@@ -13,7 +13,6 @@
 
 
 "Feature extractors for Pacman game states"
-import util
 
 def directionUpdate(pos, direction):
     if direction == 'UP':
