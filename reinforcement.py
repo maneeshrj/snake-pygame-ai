@@ -53,7 +53,17 @@ class ReflexAgent:
                 bestDist = distance(newPos, foodPos)
                 bestAction = action                
         return bestAction
-
+    
+# APPROXIMATE Q-LEARNING AGENT
+class ApproxQAgent:
+    def __init__(self, snake, env):
+        self.snake = snake
+        self.env = env
+    
+    def getNextAction(self):
+        validActions = self.snake.get_valid_actions()
+        return random.choice(validActions)
+    
 
 ### DEFINED AGENTS:
 randomAgent = lambda snake, env : RandomAgent(snake, env)
