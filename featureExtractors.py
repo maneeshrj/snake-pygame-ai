@@ -54,55 +54,27 @@ class SimpleExtractor(FeatureExtractor):
         # Position of snake head
         pos = state.getSnakePosition()
         head = pos[0]
+        #print('head',head)
         features["headX"] = head[0]
         features["headY"] = head[1]
         
-        # Current direction of snake
-        features["direction"] = action
+        foodPos = state.getFoodPosition()
+        features["foodX"] = foodPos[0]
+        features["foodY"] = foodPos[1]
         
         # Position of snake head next time step
-        nextPos = util.updatePosition(pos, action)
+        nextPos = util.updatePosition(head, action)
+        #print(nextPos)
         features["nextX"] = nextPos[0]
         features["nextY"] = nextPos[1]
         
-        features.divideAll(10.0)
+        #features.divideAll(10.0)
         return features
 
-# class SimpleExtractor(FeatureExtractor):
-#     """
-#     Returns simple features for a basic reflex Pacman:
-#     - whether food will be eaten
-#     - how far away the next food is
-#     - whether a ghost collision is imminent
-#     - whether a ghost is one step away
-#     """
-
-#     def getFeatures(self, state, action):
-#         # extract the grid of food and wall locations and get the ghost locations
-#         food = state.getFood()
-#         walls = state.getWalls()
-#         ghosts = state.getGhostPositions()
-
-#         features = util.Counter()
-
-#         features["bias"] = 1.0
-
-#         # compute the location of pacman after he takes the action
-#         x, y = state.getPacmanPosition()
-#         dx, dy = Actions.directionToVector(action)
-#         next_x, next_y = int(x + dx), int(y + dy)
-
-#         # count the number of ghosts 1-step away
-#         features["#-of-ghosts-1-step-away"] = sum((next_x, next_y) in Actions.getLegalNeighbors(g, walls) for g in ghosts)
-
-#         # if there is no danger of ghosts then add the food feature
-#         if not features["#-of-ghosts-1-step-away"] and food[next_x][next_y]:
-#             features["eats-food"] = 1.0
-
-#         dist = closestFood((next_x, next_y), food, walls)
-#         if dist is not None:
-#             # make the distance a number less than one otherwise the update
-#             # will diverge wildly
-#             features["closest-food"] = float(dist) / (walls.width * walls.height)
-#         features.divideAll(10.0)
-#         return features
+# from Snake import GameState, Snake
+# if __name__ == "__main__":
+#     snake = Snake([[0,0]])
+#     gameState = GameState(snake, 0, [10,0])
+#     ex = SimpleExtractor()
+#     action = 'RIGHT'
+#     print(ex.getFeatures(gameState, action))

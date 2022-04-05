@@ -6,7 +6,7 @@ import numpy as np
 import json
 
 if __name__ == "__main__":
-    readFromJson = False
+    readFromJson = True
     useGraphics = False
     testRuns = 1
     verbose = False
@@ -18,6 +18,8 @@ if __name__ == "__main__":
         if arg == '-json':
             readFromJson = True
             break
+        if arg == '-nojson':
+            readFromJson = False
         if arg == '-g':
             useGraphics = True
         if arg == '-v':
@@ -37,6 +39,7 @@ if __name__ == "__main__":
             useGraphics = settings['useGraphics']
             testRuns = settings['testRuns']
             verbose = settings['displayEachRun']
+            agents = [rl.randomAgent, rl.reflexAgent, rl.ApproxQAgent]
 
     avgGameLengths, avgGameScores = [], []
     

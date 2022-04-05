@@ -32,16 +32,21 @@ class Snake:
             self.pos[0][0] += 10
 
 class GameState:
-    def __init__(self, snake, score, foodPos):
+    def __init__(self, snake, score, foodPos, frameX=720, frameY=480):
         self.snakeCopy = Snake(pos=snake.pos, direction=snake.direction)
         self.score = score
         self.foodPos = foodPos
+        self.frameX = frameX
+        self.frameY = frameY
     
     def getSnakePosition(self):
         return self.snakeCopy.pos
     
     def getSnakeDirection(self):
         return self.snakeCopy.direction
+    
+    def getFoodPosition(self):
+        return self.foodPos
     
     def getValidActions(self):
         return self.snakeCopy.get_valid_actions()
@@ -51,6 +56,16 @@ class GameState:
     
     def takeAction(self, action):
         self.snakeCopy.move_snake(action)
+        
+    def isGameOver(self):
+        if self.snakeCopy.pos[0][0] < 0 or self.snakeCopy.pos[0][0] > self.frameX-10:
+            is_over = True
+        if self.snakeCopy.pos[0][1] < 0 or self.snakeCopy.pos[0][1] > self.frameY-10:
+            is_over = True
+        for block in self.snakeCopy.pos[1:]:
+            if self.snakeCopy.pos[0] == block:
+                return True
+        return False
 
 class Game:
     def __init__(self, snake, graphics=False):
@@ -183,14 +198,13 @@ class Game:
         nextState = self.getNextState(action)
         if(nextState.reachedFood()):
             return 1.0
+        if(nextState.isGameOver()):
+            return -1.0
         return 0.0
 
 if __name__ == '__main__':
-    snake = Snake()
-    game = Game(snake, 0)
-    
-    # actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'RIGHT']
-    # for action in actions:
-    #     game.play_step(action)
+    snake = Snake([[0,1],[0,0]])
+    gameState = GameState(snake, 0, [0,1])
+    print(gameState.reachedFood())
     
 

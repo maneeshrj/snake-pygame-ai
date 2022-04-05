@@ -1,4 +1,4 @@
-from util import updatePosition, distance
+from util import updatePosition, distance, manhattanDistance
 
 # REFLEX AGENT
 # At each time step, takes the action that most decreases the distance
@@ -14,10 +14,10 @@ class ReflexAgent:
         foodPos = self.env.food_pos
         newPos = None
         bestDist, bestAction = float('inf'), None
+        
         for action in validActions:
-            newPos = updatePosition(self.snake.pos, action)[0]
-
-            if distance(newPos, foodPos) < bestDist:
-                bestDist = distance(newPos, foodPos)
-                bestAction = action                
+            newHeadPos = updatePosition(self.snake.pos[0], action)
+            dist = distance(newHeadPos, foodPos)
+            if dist < bestDist:
+                bestDist, bestAction = dist, action
         return bestAction

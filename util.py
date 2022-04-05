@@ -7,21 +7,28 @@ def generateFixedActions():
     return actions
 
 def distance(a, b):
-    # print("a:" + str(a))
-    # print("b:" + str(b))
     return sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)    
 
+def manhattanDistance(a, b):
+    return abs(a[0]-b[0]) + abs(a[1]-b[1])
+
+def sign(x):
+    if x >= 0:
+        return 1
+    return -1
+
 def updatePosition(pos, direction):
+    newPos = [pos[0], pos[1]]
     if direction == 'UP':
-        print(pos)
-        pos[0][1] -= 10
+        newPos = [pos[0], pos[1] - 10] 
     if direction == 'DOWN':
-        pos[0][1] += 10
+        newPos = [pos[0], pos[1] + 10] 
     if direction == 'LEFT':
-        pos[0][0] -= 10
+        newPos = [pos[0] - 10, pos[1]] 
     if direction == 'RIGHT':
-        pos[0][0] += 10
-    return pos
+        newPos = [pos[0] + 10, pos[1]] 
+    return newPos
+
 
 class Counter(dict):
     """

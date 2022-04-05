@@ -1,6 +1,5 @@
 from Snake import Snake, Game
 import random
-from math import sqrt
 from reflexAgent import ReflexAgent
 from randomAgent import RandomAgent
 from qLearningAgent import ApproxQAgent
