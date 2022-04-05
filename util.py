@@ -137,7 +137,7 @@ class Counter(dict):
         """
         Divides all counts by divisor
         """
-        print(self)
+        #print(self)
         divisor = float(divisor)
         for key in self:
             self[key] /= divisor

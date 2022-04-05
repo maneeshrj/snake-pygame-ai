@@ -1,4 +1,4 @@
-import pygame, sys, time, random
+import pygame, sys, time, random, copy
 COLORS = {
     "black": pygame.Color(0, 0, 0),
     "white": pygame.Color(255, 255, 255),
@@ -18,6 +18,7 @@ class Snake:
             return ['LEFT', 'RIGHT', 'CONTINUE']
         elif self.direction == 'LEFT'or self.direction == 'RIGHT':
             return ['UP', 'DOWN', 'CONTINUE']
+        return ['CONTINUE']
         
     def move_snake(self, direction):
         if direction != 'CONTINUE':
@@ -33,7 +34,7 @@ class Snake:
 
 class GameState:
     def __init__(self, snake, score, foodPos, frameX=720, frameY=480):
-        self.snakeCopy = Snake(pos=snake.pos, direction=snake.direction)
+        self.snakeCopy = Snake(pos=copy.deepcopy(snake.pos), direction=snake.direction)
         self.score = score
         self.foodPos = foodPos
         self.frameX = frameX
@@ -59,9 +60,9 @@ class GameState:
         
     def isGameOver(self):
         if self.snakeCopy.pos[0][0] < 0 or self.snakeCopy.pos[0][0] > self.frameX-10:
-            is_over = True
+            return True
         if self.snakeCopy.pos[0][1] < 0 or self.snakeCopy.pos[0][1] > self.frameY-10:
-            is_over = True
+            return True
         for block in self.snakeCopy.pos[1:]:
             if self.snakeCopy.pos[0] == block:
                 return True
@@ -76,7 +77,7 @@ class Game:
         self.frame_size_x = 720
         self.frame_size_y = 480
         self.fps_controller = pygame.time.Clock()
-        self.framerate = 20
+        self.framerate = 10
         self.first_step = True
         self.set_food_pos()
         
@@ -197,14 +198,17 @@ class Game:
     def getReward(self, action):
         nextState = self.getNextState(action)
         if(nextState.reachedFood()):
+            #print('reward 1')
             return 1.0
         if(nextState.isGameOver()):
-            return -1.0
-        return 0.0
+            #print('reward -1')
+            return -1000.0
+        #print('no reward\n')
+        return 0.01
 
 if __name__ == '__main__':
-    snake = Snake([[0,1],[0,0]])
+    snake = Snake([[-1,1],[0,1]])
     gameState = GameState(snake, 0, [0,1])
-    print(gameState.reachedFood())
+    print(gameState.isGameOver())
     
 
