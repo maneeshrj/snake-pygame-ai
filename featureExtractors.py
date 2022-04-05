@@ -52,12 +52,12 @@ class SimpleExtractor(FeatureExtractor):
         features["headX"] = head[0]
         features["headY"] = head[1]
         
-        features["frameXDist"] = abs(state.frameX - head[0])
-        features["frameYDist"] = abs(state.frameY - head[1])
+        features["frameXDist"] = state.frameX - head[0]
+        features["frameYDist"] = state.frameY - head[1]
         
         foodPos = state.getFoodPosition()
-        # features["foodX"] = foodPos[0]
-        # features["foodY"] = foodPos[1]
+        features["foodX"] = foodPos[0]
+        features["foodY"] = foodPos[1]
         features["foodDistX"] = foodPos[0] - head[0]
         features["foodDistY"] = foodPos[1] - head[1]
         
@@ -66,6 +66,16 @@ class SimpleExtractor(FeatureExtractor):
         #print(nextPos)
         features["nextX"] = nextPos[0]
         features["nextY"] = nextPos[1]
+        
+        if(nextPos[0] < 0) or (nextPos[0] > state.frameX):
+            features["nextXOut"] = 1000.0
+        else:
+            features["nextXOut"] = 0.0
+            
+        if(nextPos[1] < 0) or (nextPos[1] > state.frameY):
+            features["nextYOut"] = 1000.0
+        else:
+            features["nextYOut"] = 0.0
         
         features.divideAll(1000.0)
         return features

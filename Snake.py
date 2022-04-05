@@ -1,4 +1,4 @@
-import pygame, sys, time, random, copy
+import pygame, sys, time, random, copy, util
 COLORS = {
     "black": pygame.Color(0, 0, 0),
     "white": pygame.Color(255, 255, 255),
@@ -74,7 +74,7 @@ class Game:
         self.snake = snake
         self.score = 0
         # Window size
-        self.frame_size_x = 720
+        self.frame_size_x = 480
         self.frame_size_y = 480
         self.fps_controller = pygame.time.Clock()
         self.framerate = 10
@@ -188,7 +188,7 @@ class Game:
     
     # Helper functions for feature extraction
     def getCurrentState(self):
-        return GameState(self.snake, self.score, self.food_pos)
+        return GameState(self.snake, self.score, self.food_pos, self.frame_size_x, self.frame_size_y)
     
     def getNextState(self, action):
         currState = self.getCurrentState()
@@ -202,9 +202,9 @@ class Game:
             return 1.0
         if(nextState.isGameOver()):
             #print('reward -1')
-            return -1000.0
+            return -1.0
         #print('no reward\n')
-        return 0.01
+        return 0.0
 
 if __name__ == '__main__':
     snake = Snake([[-1,1],[0,1]])
