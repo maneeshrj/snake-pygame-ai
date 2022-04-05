@@ -42,26 +42,23 @@ class SimpleExtractor(FeatureExtractor):
     Returns simple features
     """
     def getFeatures(self, state, action):
-        """
         food = state.getFood()
         walls = state.getWalls()
         ghosts = state.getGhostPositions()
-        """
 
         features = util.Counter()
         features["bias"] = 1.0
         
         # Position of snake head
-        pos = state.getSnakePosition()
-        head = pos[0]
-        features["headX"] = head[0]
-        features["headY"] = head[1]
+        pos = state.getSnakePosition()[0]
+        features["headX"] = pos[0]
+        features["headY"] = pos[1]
         
         # Current direction of snake
         features["direction"] = action
         
         # Position of snake head next time step
-        nextPos = util.updatePosition(pos, action)
+        nextPos = util.positionUpdate(pos, action)
         features["nextX"] = nextPos[0]
         features["nextY"] = nextPos[1]
         

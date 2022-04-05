@@ -6,11 +6,11 @@ import numpy as np
 import json
 
 if __name__ == "__main__":
-    readFromJson = False
+    readFromJson = True
     useGraphics = False
     testRuns = 1
     verbose = False
-    agents = []
+    agents = [rl.randomAgent, rl.reflexAgent, rl.ApproxQAgent]
 
     # print(f"Arguments count: {len(sys.argv)}")
     for i, arg in enumerate(sys.argv):
@@ -25,11 +25,11 @@ if __name__ == "__main__":
         if arg.startswith('-n='):
             testRuns = int(arg[3:])
         if arg == '-ra':
-            agents.append(rl.randomAgent)
+            agents = agents.append(rl.randomAgent)
         if arg == '-rf':
-            agents.append(rl.reflexAgent)
+            agents = agents.append(rl.reflexAgent)
         if arg == '-qa':
-            agents.append(rl.ApproxQAgent)
+            agents = agents.append(rl.ApproxQAgent)
     
     if readFromJson:
         with open('testSettings.json', "r") as settingsf:
@@ -55,6 +55,8 @@ if __name__ == "__main__":
             if verbose: print("Starting test "+str(i)+":")
             while not game_over:
                 step += 1
+                if rl.getAgentName(agentType) == 'ApproxQAgent':
+
                 action = agent.getNextAction()
                 game_over, score = env.play_step(action)
                 # print(is_over)

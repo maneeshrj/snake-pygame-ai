@@ -1,13 +1,12 @@
 from Snake import Snake, Game
 import random
 from math import sqrt
-from reflexAgent import ReflexAgent
-from randomAgent import RandomAgent
-from qLearningAgent import ApproxQAgent
+import reflexAgent
+import randomAgent
 
 ### DEFINED AGENTS:
-randomAgent = lambda snake, env : RandomAgent(snake, env)
-reflexAgent = lambda snake, env : ReflexAgent(snake, env)
+randomAgent = lambda snake, env : randomAgent.RandomAgent(snake, env)
+reflexAgent = lambda snake, env : reflexAgent.ReflexAgent(snake, env)
 approxQAgent = lambda snake, env : ApproxQAgent(snake, env)
 
 def getAgentName(agent):

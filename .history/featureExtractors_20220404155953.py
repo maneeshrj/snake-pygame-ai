@@ -52,16 +52,15 @@ class SimpleExtractor(FeatureExtractor):
         features["bias"] = 1.0
         
         # Position of snake head
-        pos = state.getSnakePosition()
-        head = pos[0]
-        features["headX"] = head[0]
-        features["headY"] = head[1]
+        pos = state.getSnakePosition()[0]
+        features["headX"] = pos[0]
+        features["headY"] = pos[1]
         
         # Current direction of snake
         features["direction"] = action
         
         # Position of snake head next time step
-        nextPos = util.updatePosition(pos, action)
+        nextPos = util.updatePosition(pos, action)[0]
         features["nextX"] = nextPos[0]
         features["nextY"] = nextPos[1]
         

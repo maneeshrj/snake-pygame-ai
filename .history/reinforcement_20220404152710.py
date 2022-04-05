@@ -3,7 +3,7 @@ import random
 from math import sqrt
 from reflexAgent import ReflexAgent
 from randomAgent import RandomAgent
-from qLearningAgent import ApproxQAgent
+from qlearningAgent import ApproxQAgent
 
 ### DEFINED AGENTS:
 randomAgent = lambda snake, env : RandomAgent(snake, env)

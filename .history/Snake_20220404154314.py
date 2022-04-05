@@ -38,16 +38,16 @@ class GameState:
         self.foodPos = foodPos
     
     def getSnakePosition(self):
-        return self.snakeCopy.pos
+        return self.snake.pos
     
     def getSnakeDirection(self):
-        return self.snakeCopy.direction
+        return self.snake.direction
     
     def getValidActions(self):
-        return self.snakeCopy.get_valid_actions()
+        return self.snake.get_valid_actions()
     
     def reachedFood(self):
-        return self.snakeCopy.pos[0] == self.foodPos
+        return self.snake.pos[0] == self.foodPos
     
     def takeAction(self, action):
         self.snakeCopy.move_snake(action)

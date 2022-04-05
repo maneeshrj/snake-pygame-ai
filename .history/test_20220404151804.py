@@ -1,16 +1,18 @@
-from Snake import Snake, Game, GameState
+from Snake import Snake, Game
 import reinforcement as rl
 import random
 import sys, time
 import numpy as np
 import json
+import randomAgent
+import reflexAgent
 
 if __name__ == "__main__":
-    readFromJson = False
+    readFromJson = True
     useGraphics = False
     testRuns = 1
     verbose = False
-    agents = []
+    agents = [rl.randomAgent, rl.reflexAgent, rl.ApproxQAgent]
 
     # print(f"Arguments count: {len(sys.argv)}")
     for i, arg in enumerate(sys.argv):
@@ -25,11 +27,8 @@ if __name__ == "__main__":
         if arg.startswith('-n='):
             testRuns = int(arg[3:])
         if arg == '-ra':
-            agents.append(rl.randomAgent)
-        if arg == '-rf':
-            agents.append(rl.reflexAgent)
-        if arg == '-qa':
-            agents.append(rl.ApproxQAgent)
+            agents = [rl.randomAgent]
+        if arg 
     
     if readFromJson:
         with open('testSettings.json', "r") as settingsf:

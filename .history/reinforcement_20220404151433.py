@@ -1,28 +1,33 @@
 from Snake import Snake, Game
 import random
 from math import sqrt
-from reflexAgent import ReflexAgent
-from randomAgent import RandomAgent
-from qLearningAgent import ApproxQAgent
+from Counter import Counter
+import featureExtractors as feat
+
+def generateFixedActions():
+    actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'DOWN', 'DOWN', 'LEFT', 'LEFT','LEFT','LEFT', 'UP','UP','UP','UP']
+    #actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'LEFT', 'UP','UP','UP','UP','UP']
+    #actions = ['RIGHT']*63
+    return actions
+
+def distance(a, b):
+    return sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)    
 
 ### DEFINED AGENTS:
 randomAgent = lambda snake, env : RandomAgent(snake, env)
 reflexAgent = lambda snake, env : ReflexAgent(snake, env)
-approxQAgent = lambda snake, env : ApproxQAgent(snake, env)
 
 def getAgentName(agent):
-    if agent == randomAgent:
+    if agent==randomAgent:
         return 'Random Agent'
-    if agent == reflexAgent:
+    if agent==reflexAgent:
         return 'Reflex Agent'
-    if agent == approxQAgent:
-        return 'Approx-Q Agent'
     return 'unknown agent'
 
 if __name__ == "__main__":
     snake = Snake()
     env = Game(snake)
-    agent = reflexAgent(snake, env)
+    agent = ReflexAgent(snake, env)
     
     timestep = 0
     while True:
