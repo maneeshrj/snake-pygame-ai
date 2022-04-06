@@ -34,15 +34,15 @@ if __name__ == "__main__":
             agents.append(rl.reflexAgent)
         if arg == '-qa':
             agents.append(rl.ApproxQAgent)
-        if arg == '-small':
-            frame_size_x = 100
-            frame_size_y = 100
-        if arg == '-medium':
-            frame_size_x = 250
-            frame_size_y = 250
-        if arg == '-large':
-            frame_size_x = 500
-            frame_size_y = 500
+        if arg == 'small':
+            frame_size_x = 200
+            frame_size_y = 200
+        if arg == 'medium':
+            frame_size_x = 400
+            frame_size_y = 400
+        if arg == 'large':
+            frame_size_x = 800
+            frame_size_y = 800
     
     if readFromJson:
         with open('testSettings.json', "r") as settingsf:

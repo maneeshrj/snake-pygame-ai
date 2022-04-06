@@ -33,7 +33,7 @@ class Snake:
             self.pos[0][0] += 10
 
 class GameState:
-    def __init__(self, snake, score, foodPos, frameX=720, frameY=480):
+    def __init__(self, snake, score, foodPos, frameX=200, frameY=10):
         self.snakeCopy = Snake(pos=copy.deepcopy(snake.pos), direction=snake.direction)
         self.score = score
         self.foodPos = foodPos
@@ -69,13 +69,13 @@ class GameState:
         return False
 
 class Game:
-    def __init__(self, snake, graphics=False, frame_size_x=480, frame_size_y=480):
+    def __init__(self, snake, graphics=False):
         self.graphics = graphics
         self.snake = snake
         self.score = 0
         # Window size
-        self.frame_size_x = frame_size_x
-        self.frame_size_y = frame_size_y
+        self.frame_size_x = 480
+        self.frame_size_y = 480
         self.fps_controller = pygame.time.Clock()
         self.framerate = 10
         self.first_step = True

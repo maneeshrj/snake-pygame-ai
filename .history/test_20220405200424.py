@@ -11,8 +11,6 @@ if __name__ == "__main__":
     testRuns = 1
     verbose = False
     agents = []
-    frame_size_x = 480
-    frame_size_y = 480
 
     # print(f"Arguments count: {len(sys.argv)}")
     for i, arg in enumerate(sys.argv):
@@ -34,15 +32,15 @@ if __name__ == "__main__":
             agents.append(rl.reflexAgent)
         if arg == '-qa':
             agents.append(rl.ApproxQAgent)
-        if arg == '-small':
-            frame_size_x = 100
-            frame_size_y = 100
-        if arg == '-medium':
-            frame_size_x = 250
-            frame_size_y = 250
-        if arg == '-large':
-            frame_size_x = 500
-            frame_size_y = 500
+        if arg == 'small':
+            rl.frame_size_x = 200
+            rl.frame_size_y = 200
+        if arg == 'medium':
+            rl.frame_size_x = 400
+            rl.frame_size_y = 400
+        if arg == 'large':
+            rl.frame_size_x = 800
+            rl.frame_size_y = 800
     
     if readFromJson:
         with open('testSettings.json', "r") as settingsf:
@@ -61,8 +59,8 @@ if __name__ == "__main__":
         gameLengths, gameScores = [], []
         startTime=time.time()
         for i in range(1,testRuns+1):
-            snake = Snake(pos=[[100, 50], [100-10, 50], [100-20, 50]], direction='RIGHT', )
-            env = Game(snake, graphics=useGraphics, frame_size_x=frame_size_x, frame_size_y=frame_size_y)
+            snake = Snake(pos=[[100, 50], [100-10, 50], [100-20, 50]], direction='RIGHT')
+            env = Game(snake, graphics=useGraphics)
             agent = agentType(snake, env)
             step = 0
             game_over = False

@@ -74,8 +74,8 @@ class Game:
         self.snake = snake
         self.score = 0
         # Window size
-        self.frame_size_x = frame_size_x
-        self.frame_size_y = frame_size_y
+        self.frame_size_x = 480
+        self.frame_size_y = 480
         self.fps_controller = pygame.time.Clock()
         self.framerate = 10
         self.first_step = True

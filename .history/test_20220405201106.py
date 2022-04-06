@@ -34,13 +34,13 @@ if __name__ == "__main__":
             agents.append(rl.reflexAgent)
         if arg == '-qa':
             agents.append(rl.ApproxQAgent)
-        if arg == '-small':
+        if arg == 'small':
             frame_size_x = 100
             frame_size_y = 100
-        if arg == '-medium':
+        if arg == 'medium':
             frame_size_x = 250
             frame_size_y = 250
-        if arg == '-large':
+        if arg == 'large':
             frame_size_x = 500
             frame_size_y = 500
     
