@@ -1,4 +1,3 @@
-from ctypes.wintypes import CHAR
 import json
 import argparse
 import time
@@ -29,6 +28,7 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true", default=False)
     parser.add_argument("-g", "--graphics", help="Use graphics", action="store_true", default=False)
     parser.add_argument("-s", "--screen_size", help="Size of the window", type=str, default="small", choices=["small", "medium", "large"])
+    parser.add_argument("-p", "--plain", help="No score or words in graphics. Use for training CNN", action="store_true", default=False)
     parser.add_argument("-j", "--json", help="Read from json file", action="store_true", default=False)
 
     # Parse arguments and assign to variables
@@ -37,6 +37,7 @@ if __name__ == "__main__":
     testRuns = args.num_runs
     verbose = args.verbose
     useGraphics = args.graphics
+    plain = args.plain
     (frame_size_x, frame_size_y) = WINDOW_SIZE_MAP[args.screen_size]
     readFromJson = args.json
     
@@ -59,7 +60,7 @@ if __name__ == "__main__":
         startTime=time.time()
         for i in range(testRuns):
             snake = Snake(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT')
-            env = Game(snake, graphics=useGraphics, frame_size_x=frame_size_x, frame_size_y=frame_size_y)
+            env = Game(snake, graphics=useGraphics, frame_size_x=frame_size_x, frame_size_y=frame_size_y, plain=plain)
             agent = agentType(snake, env)
             step = 0
             game_over = False

@@ -1,4 +1,5 @@
 import pygame, sys, time, random, copy, util
+import numpy as np
 COLORS = {
     "black": pygame.Color(0, 0, 0),
     "white": pygame.Color(255, 255, 255),
@@ -69,7 +70,7 @@ class GameState:
         return False
 
 class Game:
-    def __init__(self, snake, graphics=False, frame_size_x=480, frame_size_y=480, framerate=10):
+    def __init__(self, snake, graphics=False, frame_size_x=480, frame_size_y=480, framerate=10, plain=False):
         self.graphics = graphics
         self.snake = snake
         self.score = 0
@@ -80,7 +81,7 @@ class Game:
         self.framerate = framerate
         self.first_step = True
         self.set_food_pos()
-        
+        self.plain = plain
         
         # Check for errors
         if(self.graphics):
@@ -137,7 +138,7 @@ class Game:
             if self.snake.pos[0] == block:
                 is_over = True
 
-        if(self.graphics):
+        if self.graphics and not self.plain:
             self.show_score(1, COLORS["white"], 'consolas', 20)
         
         # Refresh game screen
@@ -168,10 +169,12 @@ class Game:
             game_over_rect = game_over_surface.get_rect()
             game_over_rect.midtop = (self.frame_size_x/2, self.frame_size_y/4)
             self.game_window.fill(COLORS["black"])
-            self.game_window.blit(game_over_surface, game_over_rect)
-            self.show_score(0, COLORS["red"], 'times', 20)
+            
+
+            if not self.plain:
+                self.game_window.blit(game_over_surface, game_over_rect)
+                self.show_score(0, COLORS["red"], 'times', 20)
             pygame.display.flip()
-            time.sleep(3)
             pygame.quit()
         #sys.exit()
     
@@ -205,6 +208,12 @@ class Game:
             return -1.0
         #print('no reward\n')
         return 0.0
+
+    def get_window_as_np(self):
+        # Get the current screen
+        screen = pygame.display.get_surface()
+        screen_array = pygame.surfarray.array3d(screen)
+        return np.asarray(screen_array)
 
 if __name__ == '__main__':
     snake = Snake([[-1,1],[0,1]])
