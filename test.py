@@ -1,48 +1,44 @@
+from ctypes.wintypes import CHAR
+import json
+import argparse
+import time
+
+import numpy as np
+
 from Snake import Snake, Game, GameState
 import reinforcement as rl
-import random
-import sys, time
-import numpy as np
-import json
+
+AGENT_MAP = {
+    'qlearning': rl.approxQAgent,
+    'reflex': rl.reflexAgent,
+    'random': rl.randomAgent
+}
+
+WINDOW_SIZE_MAP = {
+    'small': (100, 100),
+    'medium': (250, 250),
+    'large': (500, 500)
+}
 
 if __name__ == "__main__":
-    readFromJson = False
-    useGraphics = False
-    testRuns = 1
-    verbose = False
-    agents = []
-    frame_size_x = 480
-    frame_size_y = 480
 
-    # print(f"Arguments count: {len(sys.argv)}")
-    for i, arg in enumerate(sys.argv):
-        #print(f"Argument {i:>6}: {arg}")
-        if arg == '-json':
-            readFromJson = True
-            break
-        if arg == '-nojson':
-            readFromJson = False
-        if arg == '-g':
-            useGraphics = True
-        if arg == '-v':
-            verbose = True
-        if arg.startswith('-n='):
-            testRuns = int(arg[3:])
-        if arg == '-ra':
-            agents.append(rl.randomAgent)
-        if arg == '-rf':
-            agents.append(rl.reflexAgent)
-        if arg == '-qa':
-            agents.append(rl.ApproxQAgent)
-        if arg == '-small':
-            frame_size_x = 100
-            frame_size_y = 100
-        if arg == '-medium':
-            frame_size_x = 250
-            frame_size_y = 250
-        if arg == '-large':
-            frame_size_x = 500
-            frame_size_y = 500
+    # Add command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-a", "--agents", help="Agents to use", nargs='+', type=str, default=["random", "reflex", "qlearning"], choices=["random", "reflex", "qlearning"])
+    parser.add_argument("-n", "--num_runs", help="Number of runs", type=int, default=1)
+    parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true", default=False)
+    parser.add_argument("-g", "--graphics", help="Use graphics", action="store_true", default=False)
+    parser.add_argument("-s", "--screen_size", help="Size of the window", type=str, default="small", choices=["small", "medium", "large"])
+    parser.add_argument("-j", "--json", help="Read from json file", action="store_true", default=False)
+
+    # Parse arguments and assign to variables
+    args = parser.parse_args()
+    agents = [AGENT_MAP[agent] for agent in args.agents]
+    testRuns = args.num_runs
+    verbose = args.verbose
+    useGraphics = args.graphics
+    (frame_size_x, frame_size_y) = WINDOW_SIZE_MAP[args.screen_size]
+    readFromJson = args.json
     
     if readFromJson:
         with open('testSettings.json', "r") as settingsf:
@@ -54,19 +50,20 @@ if __name__ == "__main__":
 
     avgGameLengths, avgGameScores = [], []
     
+    # Test each supplied agent
     for agentType in agents:
         print()
-        print('='*40) 
+        print('='*40)
         print('Testing', rl.getAgentName(agentType))
         gameLengths, gameScores = [], []
         startTime=time.time()
-        for i in range(1,testRuns+1):
-            snake = Snake(pos=[[100, 50], [100-10, 50], [100-20, 50]], direction='RIGHT', )
+        for i in range(testRuns):
+            snake = Snake(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT')
             env = Game(snake, graphics=useGraphics, frame_size_x=frame_size_x, frame_size_y=frame_size_y)
             agent = agentType(snake, env)
             step = 0
             game_over = False
-            if verbose: print("Starting test "+str(i)+":")
+            if verbose: print("Starting test "+str(i+1)+":")
             while not game_over:
                 step += 1
                 action = agent.getNextAction()

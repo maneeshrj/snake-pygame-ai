@@ -8,6 +8,9 @@ class ReflexAgent:
         self.snake = snake
         self.env = env
     
+    def __str__(self):
+        return "ReflexAgent"
+    
     def getNextAction(self):
         validActions = self.snake.get_valid_actions()
         currentPos = self.snake.pos

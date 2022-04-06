@@ -7,7 +7,7 @@ COLORS = {
 }
 
 class Snake:
-    def __init__(self, pos=[[100, 50], [100-10, 50], [100-20, 50]], direction='RIGHT'):
+    def __init__(self, pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT'):
         # Head of the snake is the first element of the list
         self.pos = pos
         self.direction = direction
@@ -69,7 +69,7 @@ class GameState:
         return False
 
 class Game:
-    def __init__(self, snake, graphics=False, frame_size_x=480, frame_size_y=480):
+    def __init__(self, snake, graphics=False, frame_size_x=480, frame_size_y=480, framerate=10):
         self.graphics = graphics
         self.snake = snake
         self.score = 0
@@ -77,7 +77,7 @@ class Game:
         self.frame_size_x = frame_size_x
         self.frame_size_y = frame_size_y
         self.fps_controller = pygame.time.Clock()
-        self.framerate = 10
+        self.framerate = framerate
         self.first_step = True
         self.set_food_pos()
         

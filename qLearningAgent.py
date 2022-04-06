@@ -16,6 +16,9 @@ class ApproxQAgent:
         self.episodesSoFar = 0
         self.accumTrainRewards = 0.0
         self.accumTestRewards = 0.0
+    
+    def __str__(self):
+        return "ApproxQAgent"
 
     def getWeights(self):
         return self.weights

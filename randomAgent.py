@@ -7,6 +7,9 @@ class RandomAgent:
         self.snake = snake
         self.env = env
     
+    def __str__(self):
+        return "RandomAgent"
+    
     def getNextAction(self):
         validActions = self.snake.get_valid_actions()
         return random.choice(validActions)
