@@ -3,6 +3,7 @@ import argparse
 import time
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from Snake import Snake, Game, GameState
 import reinforcement as rl
@@ -58,6 +59,7 @@ if __name__ == "__main__":
         print('Testing', rl.getAgentName(agentType))
         gameLengths, gameScores = [], []
         startTime=time.time()
+        screen_np=None
         for i in range(testRuns):
             snake = Snake(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT')
             env = Game(snake, graphics=useGraphics, frame_size_x=frame_size_x, frame_size_y=frame_size_y, plain=plain)
@@ -69,6 +71,12 @@ if __name__ == "__main__":
                 step += 1
                 action = agent.getNextAction()
                 game_over, score = env.play_step(action)
+                if step==1 or step==2:
+                    if screen_np is None:
+                        screen_np = np.mean(env.get_window_as_np(), axis=2)
+                    else:
+                        print("hit")
+                        screen_np_stacked = np.dstack((screen_np, np.mean(env.get_window_as_np(), axis=2)))
                 # print(is_over)
                 if game_over:
                     if verbose:
@@ -81,6 +89,8 @@ if __name__ == "__main__":
         elapsedTime = round((time.time() - startTime) / 60,2)
         avgGameLengths.append(round(np.mean(gameLengths), 3))
         avgGameScores.append(round(np.mean(gameScores), 3))
+
+        print()
         
         print('-'*40)
         print(testRuns, "test runs completed in", elapsedTime, "mins")
@@ -89,4 +99,11 @@ if __name__ == "__main__":
         print("Min/Max score:\t\t", min(gameScores),'/',max(gameScores))
         print('='*40)
     print()
-    
+
+    # matplotlib display image as greyscale
+    print(screen_np_stacked.shape)
+    #print('Shape', screen_np.shape, ' min/max', np.min(screen_np), ' / ', np.max(screen_np))
+    fig, ax = plt.subplots(1,2)
+    ax[0].imshow(screen_np_stacked[...,0], cmap='gray')
+    ax[1].imshow(screen_np_stacked[...,1], cmap='gray')
+    plt.show()

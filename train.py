@@ -4,15 +4,15 @@ import numpy as np
 
 class ApproxQTrainer:
     def __init__(self, episodes=10):
-        self.episodes = 3000
+        self.episodes = episodes
     
     def startTraining(self, verbose=False, graphics=False):
         gameLengths, gameScores = [], []
         agent = ApproxQAgent()
         for ep in range(self.episodes+1):
-            if (ep % (self.episodes//10) == 0): print('Starting training episode', ep)
-            snake = Snake(pos=[[100, 50], [100-10, 50], [100-20, 50]], direction='RIGHT')
-            env = Game(snake, graphics=graphics)
+            if (self.episodes < 10) or (ep % (self.episodes//10) == 0): print('Starting training episode', ep)
+            snake = Snake(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT')
+            env = Game(snake, graphics=graphics, frame_size_x=100, frame_size_y=100)
             agent.startEpisode(snake, env)
             step = 0
             game_over = False
@@ -42,8 +42,8 @@ class ApproxQTrainer:
         gameLengths, gameScores = [], []
         for ep in range(testRuns):
             if verbose: print('Starting testing episode', ep)
-            snake = Snake(pos=[[100, 50], [100-10, 50], [100-20, 50]], direction='RIGHT')
-            env = Game(snake, graphics=graphics)
+            snake = Snake(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT')
+            env = Game(snake, graphics=graphics, frame_size_x=100, frame_size_y=100)
             self.agent.startEpisode(snake, env)
             step = 0
             game_over = False
@@ -69,5 +69,5 @@ class ApproxQTrainer:
 
 trainer = ApproxQTrainer()
 trainer.startTraining()
-trainer.testAgent(200, False, False)
+trainer.testAgent(2, False, True)
             

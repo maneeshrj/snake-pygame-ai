@@ -4,7 +4,7 @@ import featureExtractors as feat
 
 # APPROXIMATE Q-LEARNING AGENT
 class ApproxQAgent: 
-    def __init__(self, epsilon=0.05,gamma=0.5, alpha=0.7):
+    def __init__(self, epsilon=1.0, gamma=0.99, alpha=0.25):
         self.snake = None
         self.env = None
         self.weights = Counter()
@@ -47,10 +47,12 @@ class ApproxQAgent:
     
     def computeActionFromQValues(self, state):
         bestValue, bestAction = float("-inf"), None
+        print('\nPicking from options:')
         for action in state.getValidActions():
             qVal = self.getQValue(state, action)
             if qVal > bestValue:
                 bestValue, bestAction = qVal, action
+        print('Picked', bestAction)
         return bestAction
     
     def startEpisode(self, snake, env):
@@ -85,12 +87,13 @@ class ApproxQAgent:
     # Implement approximative Q-learning
     def getQValue(self, state, action):
         feats = self.featExtractor.getFeatures(state, action)
-        q = self.weights * feats
-        #print('q',q)
+        q = self.weights * feats # dot product of W and features, weighted linear function
+        if not self.training:
+            print('Action:', action, ', q:', q)
         return q
     
     def observeTransition(self, action):
-        reward = self.env.getReward(action)
+        reward = self.env.getRewardAlive(action)
         self.episodeRewards += reward
         if self.training:
            self.update(self.env.getCurrentState(), action, self.env.getNextState(action), reward)

@@ -164,16 +164,16 @@ class Game:
 
     def game_over(self):
         if(self.graphics):
-            my_font = pygame.font.SysFont('times new roman', 90)
+            my_font = pygame.font.SysFont('times new roman', self.frame_size_x // 5)
             game_over_surface = my_font.render('YOU DIED', True, COLORS["red"])
             game_over_rect = game_over_surface.get_rect()
             game_over_rect.midtop = (self.frame_size_x/2, self.frame_size_y/4)
             self.game_window.fill(COLORS["black"])
             
-
             if not self.plain:
                 self.game_window.blit(game_over_surface, game_over_rect)
                 self.show_score(0, COLORS["red"], 'times', 20)
+            
             pygame.display.flip()
             pygame.quit()
         #sys.exit()
@@ -181,7 +181,7 @@ class Game:
     # Score
     def show_score(self, choice, color, font, size):
         score_font = pygame.font.SysFont(font, size)
-        score_surface = score_font.render('Score : ' + str(self.score), True, color)
+        score_surface = score_font.render(str(self.score), True, color)
         score_rect = score_surface.get_rect()
         if choice == 1:
             score_rect.midtop = (self.frame_size_x/10, 15)
@@ -209,8 +209,14 @@ class Game:
         #print('no reward\n')
         return 0.0
 
+    def getRewardAlive(self, action):
+        nextState = self.getNextState(action)
+        if(nextState.isGameOver()):
+            return -1          
+        return .1
+
     def get_window_as_np(self):
-        # Get the current screen
+        # Get the current pygame window as a numpy array
         screen = pygame.display.get_surface()
         screen_array = pygame.surfarray.array3d(screen)
         return np.asarray(screen_array)
