@@ -7,14 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from Snake import Game, GameState
-import agents as ag
-
-AGENT_MAP = {
-    'approxq': ag.approxQAgent,
-    'reflex': ag.reflexAgent,
-    'random': ag.randomAgent,
-    'exactq': ag.qLearnAgent,
-}
+from agents import AGENT_MAP, getAgentName
 
 WINDOW_SIZE_MAP = {
     'small': (100, 100),
@@ -26,7 +19,7 @@ if __name__ == "__main__":
 
     # Add command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("-a", "--agents", help="Agents to use", nargs='+', type=str, default=["random", "reflex", "approxq", "exactq"], choices=["random", "reflex", "exactq", "approxq"])
+    parser.add_argument("-a", "--agents", help="Agents to use", nargs='+', type=str, default=["random", "reflex", "exactq"], choices=["random", "reflex", "exactq"])
     parser.add_argument("-n", "--num_runs", help="Number of runs", type=int, default=1)
     parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true", default=False)
     parser.add_argument("-g", "--graphics", help="Use graphics", action="store_true", default=False)
@@ -49,8 +42,9 @@ if __name__ == "__main__":
             settings = json.load(settingsf)
             useGraphics = settings['useGraphics']
             testRuns = settings['testRuns']
-            verbose = settings['displayEachRun']
-            agents = [ag.randomAgent, ag.reflexAgent, ag.ApproxQAgent]
+            verbose = settings['verbose']
+            (frameSizeX, frameSizeY) = WINDOW_SIZE_MAP[settings['screenSize']]         
+            agents = [AGENT_MAP[agent] for agent in settings['agents']]
 
     avgGameLengths, avgGameScores = [], []
     
@@ -58,20 +52,20 @@ if __name__ == "__main__":
     for agentType in agents:
         print()
         print('='*40)
-        #print('Testing', ag.getAgentName(agentType))
+        print('Testing', getAgentName(agentType))
         gameLengths, gameScores = [], []
         startTime=time.time()
-        gameOver = False
         screenNp = None
-        
+        agent = agentType()
 
         for i in range(testRuns):
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=frameSizeX, frameSizeY=frameSizeY)
             env = Game(gameState, graphics=useGraphics, plain=plain)
-            agent = agentType(gameState, env)
+            agent.startEpisode(gameState)
             step = 0
             if verbose: print("Starting test "+str(i+1)+":")
-            action = 'CONTINUE'
+            action = 'CONTINUE'            
+            gameOver = False
             while not gameOver:
                 step += 1
                 action = agent.getNextAction()
@@ -106,9 +100,12 @@ if __name__ == "__main__":
         print('-'*40)
         print(testRuns, "test runs completed in", elapsedTime, "mins")
         print("Average game:\t\t", avgGameLengths[-1], "timesteps")
+        print("Min/Max length:\t", min(gameLengths),'/',max(gameLengths),"timesteps")
         print("Average score:\t\t", avgGameScores[-1])
         print("Min/Max score:\t\t", min(gameScores),'/',max(gameScores))
         print('='*40)
+        
+        agent.stopEpisode()
     print()
 
     # matplotlib display image as greyscale

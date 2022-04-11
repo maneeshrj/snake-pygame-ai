@@ -1,5 +1,7 @@
 {
     "useGraphics": false,
-    "testRuns": 1,
-    "displayEachRun": false
+    "testRuns": 200,
+    "verbose": false,
+    "screenSize": "small",
+    "agents": ["reflex", "random"]
 }

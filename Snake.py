@@ -73,11 +73,23 @@ class GameState:
         nextState = copy.deepcopy(self)
         nextState.moveSnake(action)
         return nextState
+    
+    def getReward(self, action):
+        nextState = self.getSuccessor(action)
+        if(nextState.reachedFood()):
+            #print('reward 1')
+            return 1.0
+        if(nextState.isGameOver()):
+            #print('reward -1')
+            return -1.0
+        #print('no reward\n')
+        return 0.0
 
     def __hash__(self):
         # TODO: Hash the attributes of the state for qlearning dictionary lookup
-        pass
-
+        tup = (tuple(self.pos[0]), self.direction, tuple(self.foodPos))
+        # print(tup)
+        return hash(tup)
 
 class Game:
     def __init__(self, gameState=GameState(), graphics=False, framerate=10, plain=False):
@@ -90,6 +102,8 @@ class Game:
         self.framerate = framerate
         self.first_step = True
         self.plain = plain
+        
+        random.seed(42)
         # generate 100 random food positions as a generator to call next()
         self.foodPosList = []
         for i in range((self.frameX//10)**2):
@@ -194,15 +208,7 @@ class Game:
         return self.gameState.getSuccessor(action)
     
     def getReward(self, action):
-        nextState = self.gameState.getSuccessor(action)
-        if(nextState.reachedFood()):
-            #print('reward 1')
-            return 1.0
-        if(nextState.isGameOver()):
-            #print('reward -1')
-            return -1.0
-        #print('no reward\n')
-        return 0.0
+        return self.gameState.getReward(action)
 
     def getScreenAsNumpy(self):
         # Get the current pygame window as a numpy array
