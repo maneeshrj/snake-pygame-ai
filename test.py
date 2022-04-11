@@ -1,17 +1,19 @@
 import json
 import argparse
 import time
+import pygame, sys
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Snake import Snake, Game, GameState
-import reinforcement as rl
+from Snake import Game, GameState
+import agents as ag
 
 AGENT_MAP = {
-    'qlearning': rl.approxQAgent,
-    'reflex': rl.reflexAgent,
-    'random': rl.randomAgent
+    'approxq': ag.approxQAgent,
+    'reflex': ag.reflexAgent,
+    'random': ag.randomAgent,
+    'exactq': ag.qLearnAgent,
 }
 
 WINDOW_SIZE_MAP = {
@@ -24,7 +26,7 @@ if __name__ == "__main__":
 
     # Add command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("-a", "--agents", help="Agents to use", nargs='+', type=str, default=["random", "reflex", "qlearning"], choices=["random", "reflex", "qlearning"])
+    parser.add_argument("-a", "--agents", help="Agents to use", nargs='+', type=str, default=["random", "reflex", "approxq", "exactq"], choices=["random", "reflex", "exactq", "approxq"])
     parser.add_argument("-n", "--num_runs", help="Number of runs", type=int, default=1)
     parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true", default=False)
     parser.add_argument("-g", "--graphics", help="Use graphics", action="store_true", default=False)
@@ -39,7 +41,7 @@ if __name__ == "__main__":
     verbose = args.verbose
     useGraphics = args.graphics
     plain = args.plain
-    (frame_size_x, frame_size_y) = WINDOW_SIZE_MAP[args.screen_size]
+    (frameSizeX, frameSizeY) = WINDOW_SIZE_MAP[args.screen_size]
     readFromJson = args.json
     
     if readFromJson:
@@ -48,7 +50,7 @@ if __name__ == "__main__":
             useGraphics = settings['useGraphics']
             testRuns = settings['testRuns']
             verbose = settings['displayEachRun']
-            agents = [rl.randomAgent, rl.reflexAgent, rl.ApproxQAgent]
+            agents = [ag.randomAgent, ag.reflexAgent, ag.ApproxQAgent]
 
     avgGameLengths, avgGameScores = [], []
     
@@ -56,35 +58,44 @@ if __name__ == "__main__":
     for agentType in agents:
         print()
         print('='*40)
-        print('Testing', rl.getAgentName(agentType))
+        #print('Testing', ag.getAgentName(agentType))
         gameLengths, gameScores = [], []
         startTime=time.time()
-        screen_np=None
+        gameOver = False
+        screenNp = None
+        
+
         for i in range(testRuns):
-            snake = Snake(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT')
-            env = Game(snake, graphics=useGraphics, frame_size_x=frame_size_x, frame_size_y=frame_size_y, plain=plain)
-            agent = agentType(snake, env)
+            gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=frameSizeX, frameSizeY=frameSizeY)
+            env = Game(gameState, graphics=useGraphics, plain=plain)
+            agent = agentType(gameState, env)
             step = 0
-            game_over = False
             if verbose: print("Starting test "+str(i+1)+":")
-            while not game_over:
+            action = 'CONTINUE'
+            while not gameOver:
                 step += 1
                 action = agent.getNextAction()
-                game_over, score = env.play_step(action)
-                if step==1 or step==2:
-                    if screen_np is None:
-                        screen_np = np.mean(env.get_window_as_np(), axis=2)
-                    else:
-                        print("hit")
-                        screen_np_stacked = np.dstack((screen_np, np.mean(env.get_window_as_np(), axis=2)))
+                gameOver, score= env.playStep(action)
+                
+                if useGraphics:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            pygame.quit()
+                            sys.exit()
+
+                    if step==1 or step==2:
+                        if screenNp is None:
+                            screenNp = np.mean(env.getScreenAsNumpy(), axis=2)
+                        else:
+                            screenNpStacked = np.dstack((screenNp, np.mean(env.getScreenAsNumpy(), axis=2)))
                 # print(is_over)
-                if game_over:
+                if gameOver:
                     if verbose:
                         print("\tGame over in", step, "steps")
                         print("\tScore: ", score)
                     gameLengths.append(step)
                     gameScores.append(score)
-                    env.game_over()
+                    env.gameOver()
 
         elapsedTime = round((time.time() - startTime) / 60,2)
         avgGameLengths.append(round(np.mean(gameLengths), 3))
@@ -101,9 +112,9 @@ if __name__ == "__main__":
     print()
 
     # matplotlib display image as greyscale
-    print(screen_np_stacked.shape)
+    #print(screenNpStacked.shape)
     #print('Shape', screen_np.shape, ' min/max', np.min(screen_np), ' / ', np.max(screen_np))
-    fig, ax = plt.subplots(1,2)
+    """fig, ax = plt.subplots(1,2)
     ax[0].imshow(screen_np_stacked[...,0], cmap='gray')
     ax[1].imshow(screen_np_stacked[...,1], cmap='gray')
-    plt.show()
+    plt.show()"""

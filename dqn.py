@@ -1,18 +1,11 @@
 import random
-import numpy as np
 from collections import namedtuple, deque
-from itertools import count
-from PIL import Image
 
-import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
-import torchvision.transforms as T
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
-
 class ReplayMemory(object):
 
     def __init__(self, capacity):
@@ -55,13 +48,27 @@ class DQN(nn.Module):
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
     def forward(self, x):
         x = x.to("cpu")
+        print(x)
         x = F.relu(self.bn1(self.conv1(x)))
+        
         x = F.relu(self.bn2(self.conv2(x)))
         x = F.relu(self.bn3(self.conv3(x)))
         return self.head(x.view(x.size(0), -1))
 
-resize = T.Compose([T.ToPILImage(),
-                    T.Resize(40, interpolation=Image.CUBIC),
-                    T.ToTensor()])
+"""def plot_durations():
+    plt.figure(2)
+    plt.clf()
+    durations_t = torch.tensor(episode_durations, dtype=torch.float)
+    plt.title('Training...')
+    plt.xlabel('Episode')
+    plt.ylabel('Duration')
+    plt.plot(durations_t.numpy())
+    # Take 100 episode averages and plot them too
+    if len(durations_t) >= 100:
+        means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
+        means = torch.cat((torch.zeros(99), means))
+        plt.plot(means.numpy())
 
+    plt.pause(0.001)  # pause a bit so that plots are updated"""
 
+    
