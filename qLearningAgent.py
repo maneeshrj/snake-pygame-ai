@@ -4,7 +4,7 @@ import featureExtractors as feat
 
 ### EXACT Q LEARNING AGENT
 class QLearningAgent:
-    def __init__(self, numTraining=100, epsilon=0.5, gamma=0.8, alpha=0.2):
+    def __init__(self, numTraining=100, epsilon=0.7, gamma=0.8, alpha=0.2):
         self.numTraining = numTraining
         self.epsilon = epsilon
         self.discount = gamma

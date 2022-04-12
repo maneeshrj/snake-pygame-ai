@@ -87,9 +87,18 @@ class GameState:
 
     def __hash__(self):
         # TODO: Hash the attributes of the state for qlearning dictionary lookup
-        tup = (tuple(self.pos[0]), self.direction, tuple(self.foodPos))
+        tup = (str(self.pos), tuple(self.foodPos))
         # print(tup)
         return hash(tup)
+    
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return (self.pos == other.pos) and (self.foodPos == other.foodPos)
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 class Game:
     def __init__(self, gameState=GameState(), graphics=False, framerate=10, plain=False):
@@ -103,7 +112,7 @@ class Game:
         self.first_step = True
         self.plain = plain
         
-        random.seed(42)
+        random.seed(69)
         # generate 100 random food positions as a generator to call next()
         self.foodPosList = []
         for i in range((self.frameX//10)**2):

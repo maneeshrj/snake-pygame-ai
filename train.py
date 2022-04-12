@@ -3,6 +3,7 @@ from qLearningAgent import QLearningAgent
 import numpy as np
 import random
 import argparse
+import json
 
 class Trainer:
     def __init__(self, agent):
@@ -16,8 +17,6 @@ class Trainer:
         print("Training agent for", trainingEpisodes, "episodes.")
         print("="*40)
         for episode in range(trainingEpisodes):
-            if verbose and episode%(trainingEpisodes//10)==0:
-                print(f"Starting episode {episode+1} of {trainingEpisodes}.")
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=100, frameSizeY=100)
             game = Game(gameState=gameState, graphics=False, plain=True)
             self.agent.startEpisode(gameState)
@@ -31,8 +30,11 @@ class Trainer:
                 nextState = game.getNextState(action)
                 gameOver, score = game.playStep(action)
                 self.agent.observeTransition(state, action, nextState, reward)
-
+            
             game.gameOver()
+            if verbose and episode%(trainingEpisodes//10)==0:
+                print(f"Finished episode {episode} of {trainingEpisodes}.")
+                print('Accumulated rewards', self.agent.episodeRewards)
             self.agent.stopEpisode()
         self.agent.stopTraining()
          
@@ -65,7 +67,7 @@ class QTrainer(Trainer):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train or test the agent')
     parser.add_argument("-a", "--agent", help="Agent to use", type=str, default="q", choices=["q", "approxq"])
-    parser.add_argument("-n", "--num_episodes", help="Number of training episodes", type=int, default=10000)
+    parser.add_argument("-n", "--num_episodes", help="Number of training episodes", type=int, default=4000)
     parser.add_argument("-t", "--test_runs", help="Number of test runs", type=int, default=10)
     parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true")
 
@@ -79,6 +81,10 @@ if __name__ == "__main__":
         trainer = Trainer(QLearningAgent(numTraining=numEpisodes))
         trainer.train(trainingEpisodes=numEpisodes, verbose=verbose)
         trainer.test(testRuns=testRuns, graphics=True, verbose=verbose)
+        # print(trainer.agent.qValues)
+        # with open('qValues.json', 'w') as f:
+        #     json.dump(trainer.agent.qValues, f)
+        
 
 # class ApproxQTrainer:
 #     def __init__(self, episodes=10):
