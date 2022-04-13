@@ -1,7 +1,10 @@
 {
-    "useGraphics": false,
-    "testRuns": 200,
-    "verbose": false,
-    "screenSize": "small",
-    "agents": ["reflex", "random"]
+  "useGraphics": false,
+  "testRuns": 200,
+  "verbose": false,
+  "screenSize": "small",
+  "agents": [
+    "reflex",
+    "random"
+  ]
 }

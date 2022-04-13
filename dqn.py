@@ -6,10 +6,12 @@ import torch.nn.functional as F
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
+
+
 class ReplayMemory(object):
 
     def __init__(self, capacity):
-        self.memory = deque([],maxlen=capacity)
+        self.memory = deque([], maxlen=capacity)
 
     def push(self, *args):
         """Save a transition"""
@@ -20,6 +22,7 @@ class ReplayMemory(object):
 
     def __len__(self):
         return len(self.memory)
+
 
 class DQN(nn.Module):
 
@@ -37,8 +40,9 @@ class DQN(nn.Module):
 
         # TODO: Downscale image by factor of 10
 
-        def conv2d_size_out(size, kernel_size = 5, stride = 2):
-            return (size - (kernel_size - 1) - 1) // stride  + 1
+        def conv2d_size_out(size, kernel_size=5, stride=2):
+            return (size - (kernel_size - 1) - 1) // stride + 1
+
         convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(w)))
         convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(h)))
         linear_input_size = convw * convh * 32
@@ -50,10 +54,11 @@ class DQN(nn.Module):
         x = x.to("cpu")
         print(x)
         x = F.relu(self.bn1(self.conv1(x)))
-        
+
         x = F.relu(self.bn2(self.conv2(x)))
         x = F.relu(self.bn3(self.conv3(x)))
         return self.head(x.view(x.size(0), -1))
+
 
 """def plot_durations():
     plt.figure(2)
@@ -70,5 +75,3 @@ class DQN(nn.Module):
         plt.plot(means.numpy())
 
     plt.pause(0.001)  # pause a bit so that plots are updated"""
-
-    

@@ -26,7 +26,7 @@ screen_width = 40
 
 # Get number of actions from gym action space
 # Maybe change actions to left, right, continue so that there are never illegal moves and only 3 actions
-n_actions = 4 
+n_actions = 4
 
 policy_net = DQN(screen_height, screen_width, n_actions).to(DEVICE)
 target_net = DQN(screen_height, screen_width, n_actions).to(DEVICE)
@@ -39,6 +39,7 @@ memory = ReplayMemory(10000)
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 
+
 def optimize_model():
     if len(memory) < BATCH_SIZE:
         return
@@ -49,9 +50,9 @@ def optimize_model():
 
     # Compute a mask of non-final states and concatenate the batch elements
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
-                                          batch.next_state)), device=DEVICE, dtype=torch.uint8)
+                                            batch.next_state)), device=DEVICE, dtype=torch.uint8)
     non_final_next_states = torch.cat([s for s in batch.next_state
-                                                if s is not None])
+                                       if s is not None])
     state_batch = torch.cat(batch.state)
     action_batch = torch.cat(batch.action)
     reward_batch = torch.cat(batch.reward)
@@ -76,11 +77,12 @@ def optimize_model():
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
 
+
 def select_action(state):
     global steps_done
     sample = random.random()
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
-        math.exp(-1. * steps_done / EPS_DECAY)
+                    math.exp(-1. * steps_done / EPS_DECAY)
     steps_done += 1
     if sample > eps_threshold:
         with torch.no_grad():
@@ -99,7 +101,7 @@ if __name__ == "__main__":
 
     for i_episode in range(num_episodes):
         # Initialize the environment and state
-        #env.reset()
+        # env.reset()
         print(f"Starting Episode {i_episode}")
         snake = Snake([[30, 20], [20, 20], [10, 20]], 'RIGHT')
         game = Game(snake, graphics=True, frame_size_x=100, frame_size_y=100, plain=True)
@@ -109,24 +111,24 @@ if __name__ == "__main__":
         step = 0
         game_over = False
         while not game_over:
-            
-            action = select_action(state) # make sure it only selects valid actions
-            game_over, score = game.play_step(action) # Change score to a reward?
+
+            action = select_action(state)  # make sure it only selects valid actions
+            game_over, score = game.play_step(action)  # Change score to a reward?
             score = torch.tensor([score], device=DEVICE)
-            
+
             new_screen = resize(game.get_window_as_np())
             if not game_over:
                 next_state = new_screen
             else:
                 next_state = None
-            
+
             memory.push(state, action, next_state, score)
             state = next_state
 
             optimize_model()
             if game_over:
-                episode_durations.append(step+1)
-                #plot_durations()
+                episode_durations.append(step + 1)
+                # plot_durations()
             step += 1
         # Update the target network
         if i_episode % TARGET_UPDATE == 0:

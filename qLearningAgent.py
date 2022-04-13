@@ -2,6 +2,7 @@ import random
 from util import Counter
 import featureExtractors as feat
 
+
 ### EXACT Q LEARNING AGENT
 class QLearningAgent:
     def __init__(self, numTraining=100, epsilon=0.7, gamma=0.8, alpha=0.2):
@@ -14,23 +15,23 @@ class QLearningAgent:
         self.accumTrainRewards = 0.0
         self.accumTestRewards = 0.0
         self.training = True
-    
+
     def __str__(self):
         return "QLearningAgent"
-    
+
     def getQValue(self, state, action):
         """
             Returns Q(state,action)
             Should return 0.0 if we have never seen a state
             or the Q node value otherwise
         """
-        return self.qValues[(state, action)]# if (state, action) in self.qValues else 0.0
-    
+        return self.qValues[(state, action)]  # if (state, action) in self.qValues else 0.0
+
     def startEpisode(self, gameState):
         self.gameState = gameState
         self.lastAction = None
         self.episodeRewards = 0.0
-    
+
     def stopEpisode(self):
         if self.episodesSoFar < self.numTraining:
             self.accumTrainRewards += self.episodeRewards
@@ -56,14 +57,14 @@ class QLearningAgent:
             for action in legalActions:
                 q = self.getQValue(state, action)
                 if q > maxQ:
-                  maxQ = q
-                  bestActions = [action]
+                    maxQ = q
+                    bestActions = [action]
                 elif q == maxQ:
-                  bestActions.append(action)
+                    bestActions.append(action)
             chosenAction = random.choice(bestActions)
             # print(f"Picking a policy action {chosenAction} with a Q value of {maxQ}")
             return chosenAction
-    
+
     def computeValueFromQValues(self, state):
         """
             Compute the best value to take for a state.  Note that if there
@@ -78,9 +79,9 @@ class QLearningAgent:
             for action in legalActions:
                 q = self.getQValue(state, action)
                 if q > maxQ:
-                  maxQ = q
+                    maxQ = q
             return maxQ
-    
+
     def getNextAction(self, state):
         """
             Compute the action to take in the current state.  With
@@ -111,30 +112,28 @@ class QLearningAgent:
             NOTE: You should never call this function,
             it will be called on your behalf
         """
-        sample = reward + self.discount*self.getValue(nextState)
-        self.qValues[(state, action)] = self.getQValue(state, action) + self.alpha*(sample - self.getQValue(state, action))
+        sample = reward + self.discount * self.getValue(nextState)
+        self.qValues[(state, action)] = self.getQValue(state, action) + self.alpha * (
+                    sample - self.getQValue(state, action))
 
     def getPolicy(self, state):
         return self.computeActionFromQValues(state)
-    
+
     def getValue(self, state):
         return self.computeValueFromQValues(state)
 
-    def observeTransition(self, state,action,nextState,deltaReward):
+    def observeTransition(self, state, action, nextState, deltaReward):
         """
             Called by environment to inform agent that a transition has
             been observed. This will result in a call to self.update
             on the same arguments
         """
         self.episodeRewards += deltaReward
-        self.update(state,action,nextState,deltaReward)
+        self.update(state, action, nextState, deltaReward)
 
     def stopTraining(self):
         self.training = False
-     
-        
-     
-        
+
 ### APPROXIMATE Q-LEARNING AGENT
 # class ApproxQAgent: 
 #     def __init__(self, epsilon=1.0, gamma=0.99, alpha=0.25):
@@ -149,22 +148,22 @@ class QLearningAgent:
 #         self.episodesSoFar = 0
 #         self.accumTrainRewards = 0.0
 #         self.accumTestRewards = 0.0
-    
+
 #     def __str__(self):
 #         return "ApproxQAgent"
 
 #     def getWeights(self):
 #         return self.weights
-    
+
 #     def setWeights(self, weights):
 #         self.weights = weights
-    
+
 #     def isInTraining(self):
 #         return self.training
 
 #     def stopTraining(self):
 #         self.training = False
-    
+
 #     def getNextAction(self):
 #         if(self.env == None): return None
 #         validActions = self.gameState.getValidActions()
@@ -174,10 +173,10 @@ class QLearningAgent:
 #             action = random.choice(validActions)
 #         else:
 #             action = self.computeActionFromQValues(self.env.getCurrentState())
-        
+
 #         self.observeTransition(action)
 #         return action
-    
+
 #     def computeActionFromQValues(self, state):
 #         bestValue, bestAction = float("-inf"), None
 #         print('\nPicking from options:')
@@ -187,12 +186,12 @@ class QLearningAgent:
 #                 bestValue, bestAction = qVal, action
 #         print('Picked', bestAction)
 #         return bestAction
-    
+
 #     def startEpisode(self, gameState, env):
 #         self.episodeRewards = 0.0
 #         self.gameState = gameState
 #         self.env = env
-    
+
 #     def stopEpisode(self):
 #         if self.training:
 #             self.accumTrainRewards += self.episodeRewards
@@ -203,7 +202,7 @@ class QLearningAgent:
 #         self.episodesSoFar += 1
 #         self.gameState = None
 #         self.env = None
-        
+
 #     def computeValueFromQValues(self, state):
 #         # if len(self.getValidActions(state)) == 0:
 #         #     return 0.0
@@ -213,10 +212,10 @@ class QLearningAgent:
 #             if qVal > bestValue:
 #                 bestValue = qVal
 #         return bestValue
-    
+
 #     def getValue(self, state):
 #         return self.computeValueFromQValues(state)
-    
+
 #     # Implement approximative Q-learning
 #     def getQValue(self, state, action):
 #         feats = self.featExtractor.getFeatures(state, action)
@@ -224,13 +223,13 @@ class QLearningAgent:
 #         if not self.training:
 #             print('Action:', action, ', q:', q)
 #         return q
-    
+
 #     def observeTransition(self, action):
 #         reward = self.env.getRewardAlive(action)
 #         self.episodeRewards += reward
 #         if self.training:
 #            self.update(self.env.getCurrentState(), action, self.env.getNextState(action), reward)
-    
+
 #     def update(self, state, action, nextState, reward):
 #         feats = self.featExtractor.getFeatures(state, action)
 #         diff = (reward + self.discount*self.getValue(nextState)) - self.getQValue(state,action)

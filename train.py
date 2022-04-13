@@ -5,10 +5,11 @@ import random
 import argparse
 import json
 
+
 class Trainer:
     def __init__(self, agent):
         self.agent = agent
-    
+
     def train(self, trainingEpisodes=1000, verbose=False):
         """
         Train the agent for the specified number of episodes.
@@ -16,9 +17,10 @@ class Trainer:
         """
         random.seed(42)
         print("Training agent for", trainingEpisodes, "episodes.")
-        print("="*40)
+        print("=" * 40)
         for episode in range(trainingEpisodes):
-            gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=100, frameSizeY=100))
+            gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=100,
+                                  frameSizeY=100)
             if verbose and episode % (trainingEpisodes // 5) == 0:
                 game = Game(gameState=gameState, graphics=True, plain=True)
             else:
@@ -29,19 +31,19 @@ class Trainer:
                 state = game.gameState
                 # print(state)
                 action = self.agent.getNextAction(state)
-                
+
                 reward = game.getReward(action)
                 nextState = game.getNextState(action)
                 gameOver, score = game.playStep(action)
                 self.agent.observeTransition(state, action, nextState, reward)
-            
+
             game.gameOver()
-            if verbose and episode%(trainingEpisodes//10)==0:
+            if verbose and episode % (trainingEpisodes // 10) == 0:
                 print(f"Finished episode {episode} of {trainingEpisodes}.")
                 print('Accumulated rewards', self.agent.episodeRewards)
             self.agent.stopEpisode()
         self.agent.stopTraining()
-         
+
     def test(self, testRuns=10, graphics=False, verbose=False):
         """
         Test the agent for the specified number of runs.
@@ -58,10 +60,9 @@ class Trainer:
             while not gameOver:
                 state = game.gameState
                 action = self.agent.getNextAction(state)
-                gameOver, score= game.playStep(action)
+                gameOver, score = game.playStep(action)
             self.agent.stopEpisode()
             game.gameOver()
-
 
 
 class QTrainer(Trainer):
@@ -88,18 +89,17 @@ if __name__ == "__main__":
         # print(trainer.agent.qValues)
         # with open('qValues.json', 'w') as f:
         #     json.dump(trainer.agent.qValues, f)
-        
 
 # class ApproxQTrainer:
 #     def __init__(self, episodes=10):
 #         self.episodes = episodes
-    
+
 #     def startTraining(self, verbose=False, graphics=False):
 #         gameLengths, gameScores = [], []
 #         agent = ApproxQAgent()
 #         for ep in range(self.episodes+1):
 #             if (self.episodes < 10) or (ep % (self.episodes//10) == 0): print('Starting training episode', ep)
-            
+
 #             # gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT')
 #             gameState = GameState()
 #             env = Game(graphics=graphics, frameSizeX=100, frameSizeY=100)
@@ -127,7 +127,7 @@ if __name__ == "__main__":
 #         print('Avg score:', round(np.mean(gameScores), 3))
 #         print('Min/max score:', min(gameScores), ' / ', max(gameScores))
 #         self.agent = agent
-    
+
 #     def testAgent(self, testRuns=10, verbose=True, graphics=False):
 #         print("--- Starting", testRuns, "test runs --")
 #         self. agent.stopTraining()

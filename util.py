@@ -1,32 +1,38 @@
 from math import sqrt
 
+
 def generateFixedActions():
-    actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'DOWN', 'DOWN', 'LEFT', 'LEFT','LEFT','LEFT', 'UP','UP','UP','UP']
-    #actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'LEFT', 'UP','UP','UP','UP','UP']
-    #actions = ['RIGHT']*63
+    actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'DOWN', 'DOWN', 'LEFT', 'LEFT', 'LEFT', 'LEFT', 'UP',
+               'UP', 'UP', 'UP']
+    # actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'LEFT', 'UP','UP','UP','UP','UP']
+    # actions = ['RIGHT']*63
     return actions
 
+
 def distance(a, b):
-    return sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)    
+    return sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
+
 
 def manhattanDistance(a, b):
-    return abs(a[0]-b[0]) + abs(a[1]-b[1])
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
 
 def sign(x):
     if x >= 0:
         return 1
     return -1
 
+
 def updatePosition(pos, direction):
     newPos = [pos[0], pos[1]]
     if direction == 'UP':
-        newPos = [pos[0], pos[1] - 10] 
+        newPos = [pos[0], pos[1] - 10]
     if direction == 'DOWN':
-        newPos = [pos[0], pos[1] + 10] 
+        newPos = [pos[0], pos[1] + 10]
     if direction == 'LEFT':
-        newPos = [pos[0] - 10, pos[1]] 
+        newPos = [pos[0] - 10, pos[1]]
     if direction == 'RIGHT':
-        newPos = [pos[0] + 10, pos[1]] 
+        newPos = [pos[0] + 10, pos[1]]
     return newPos
 
 
@@ -70,6 +76,7 @@ class Counter(dict):
     subtracted or multiplied together.  See below for details.  They can
     also be normalized and their total count and arg max can be extracted.
     """
+
     def __getitem__(self, idx):
         self.setdefault(idx, 0)
         return dict.__getitem__(self, idx)
@@ -111,7 +118,7 @@ class Counter(dict):
         ['second', 'third', 'first']
         """
         sortedItems = self.items()
-        compare = lambda x, y:  sign(y[1] - x[1])
+        compare = lambda x, y: sign(y[1] - x[1])
         sortedItems.sort(cmp=compare)
         return [x[0] for x in sortedItems]
 
@@ -137,7 +144,7 @@ class Counter(dict):
         """
         Divides all counts by divisor
         """
-        #print(self)
+        # print(self)
         divisor = float(divisor)
         for key in self:
             self[key] /= divisor
@@ -148,7 +155,7 @@ class Counter(dict):
         """
         return Counter(dict.copy(self))
 
-    def __mul__(self, y ):
+    def __mul__(self, y):
         """
         Multiplying two counters gives the dot product of their vectors where
         each unique label is a vector element.
@@ -167,7 +174,7 @@ class Counter(dict):
         sum = 0
         x = self
         if len(x) > len(y):
-            x,y = y,x
+            x, y = y, x
         for key in x:
             if key not in y:
                 continue
@@ -192,7 +199,7 @@ class Counter(dict):
         for key, value in y.items():
             self[key] += value
 
-    def __add__( self, y ):
+    def __add__(self, y):
         """
         Adding two counters gives a counter with the union of all keys and
         counts of the second added to counts of the first.
@@ -218,7 +225,7 @@ class Counter(dict):
             addend[key] = y[key]
         return addend
 
-    def __sub__( self, y ):
+    def __sub__(self, y):
         """
         Subtracting a counter from another gives a counter with the union of all keys and
         counts of the second subtracted from counts of the first.
