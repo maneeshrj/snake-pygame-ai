@@ -86,7 +86,6 @@ def game_over():
 
     sys.exit()
 
-
 # Score
 def show_score(choice, color, font, size):
     score_font = pygame.font.SysFont(font, size)

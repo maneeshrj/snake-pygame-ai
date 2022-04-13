@@ -14,11 +14,15 @@ class Trainer:
         Train the agent for the specified number of episodes.
         Each episode is a complete game.
         """
+        random.seed(42)
         print("Training agent for", trainingEpisodes, "episodes.")
         print("="*40)
         for episode in range(trainingEpisodes):
-            gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=100, frameSizeY=100)
-            game = Game(gameState=gameState, graphics=False, plain=True)
+            gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=100, frameSizeY=100))
+            if verbose and episode % (trainingEpisodes // 5) == 0:
+                game = Game(gameState=gameState, graphics=True, plain=True)
+            else:
+                game = Game(gameState=gameState, graphics=False, plain=True)
             self.agent.startEpisode(gameState)
             gameOver = False
             while not gameOver:
@@ -44,8 +48,8 @@ class Trainer:
         Each run is a complete game.
         """
         print("Testing agent for", testRuns, "runs.")
-        print("="*40)
         gameLengths, gameScores = [], []
+        print(testRuns)
         for i in range(testRuns):
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=100, frameSizeY=100)
             game = Game(gameState=gameState, graphics=True, plain=True)
