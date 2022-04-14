@@ -148,14 +148,19 @@ class QLearningAgent:
         with open('qvalues.pkl', 'rb') as f:
             self.qValues = pickle.load(f)
     
-    def startTraining(self, alpha=0.3, gamma=0.9, epsilon=0.8, numTraining=100):
+    def startTraining(self, alpha=0.3, gamma=0.8, epsilon=0.8, numTraining=100):
         self.training = True
         self.discount = gamma
         self.alpha = alpha
         self.epsilon = epsilon
         self.initEpsilon = epsilon
         self.numTraining = numTraining
-
+    
+    def getQValuesAsDictionary(self):
+        qValDict = {}
+        for key, val in self.qValues.items():
+            qValDict[key] = val
+        return qValDict 
 
 ### APPROXIMATE Q-LEARNING AGENT
 # class ApproxQAgent: 

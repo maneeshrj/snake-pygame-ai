@@ -62,14 +62,15 @@ class Trainer:
                 self.totalTrainRewards = self.agent.accumTrainRewards - self.totalTrainRewards
                 print('Accumulated rewards at 25% training interval:', self.totalTrainRewards)
                 self.totalTrainRewards = self.agent.accumTrainRewards
-                print('Q Value dictionary size:', sys.getsizeof(self.agent.qValues), 'bytes')
-                print('Number of Q-states explored:', len(self.agent.qValues))
+                qValDict = self.agent.getQValuesAsDictionary()
+                print('Q Value dictionary size:', sys.getsizeof(qValDict), 'bytes')
+                print('Number of Q-states explored:', len(qValDict))
                 if saveWeights:
                     with open('qvalues.pkl', 'wb') as f:
-                        pickle.dump(self.agent.qValues, f, protocol=pickle.HIGHEST_PROTOCOL)
+                        pickle.dump(qValDict, f, protocol=pickle.HIGHEST_PROTOCOL)
                     with open('qvalues.pkl', 'rb') as f:
                         counts = pickle.load(f)
-                        print('Length of qval dict saved:', len(counts))      
+                        print('Length of qval dict saved:', len(counts))
 
         self.agent.stopTraining()
         print('Average rewards per training episode:', (self.agent.accumTrainRewards/trainingEpisodes))
@@ -112,9 +113,6 @@ class Trainer:
         print("Min/Max score:\t\t", min(gameScores), '/', max(gameScores))
         print(gameScores, ' ... ', gameLengths)
 
-class QTrainer(Trainer):
-    pass
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train or test the agent')
     parser.add_argument("-a", "--agent", help="Agent to use", type=str, default="q", choices=["q", "approxq"])
@@ -139,6 +137,14 @@ if __name__ == "__main__":
         trainer = Trainer(agent)
         trainer.train(trainingEpisodes=numEpisodes, verbose=verbose, saveWeights=saveWeights)
         trainer.test(testRuns=testRuns, verbose=verbose)
+    """elif agentType == "approxq":
+        agent = ApproximateQLearningAgent()
+        if loadQValues:
+            agent.loadQValues()
+        trainer = Trainer(agent)
+        trainer.train(trainingEpisodes=numEpisodes, verbose=verbose, saveWeights=saveWeights)
+        trainer.test(testRuns=testRuns, verbose=verbose)"""
+
 
 # class ApproxQTrainer:
 #     def __init__(self, episodes=10):
