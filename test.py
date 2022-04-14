@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 from Snake import Game, GameState, Trial
 from agents import AGENT_MAP, getAgentName
+from qLearningAgent import QLearningAgent
 
 WINDOW_SIZE_MAP = {
     'small': (100, 100),
@@ -62,6 +63,8 @@ if __name__ == "__main__":
         startTime = time.time()
         screenNp = None
         agent = agentType()
+        if isinstance(agent, QLearningAgent):
+            agent.loadQValues()
 
         for i in range(testRuns):
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=frameSizeX,

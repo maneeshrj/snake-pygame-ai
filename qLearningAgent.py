@@ -1,21 +1,17 @@
 import random
+import pickle
 from util import Counter
 import featureExtractors as feat
 
 
 ### EXACT Q LEARNING AGENT
 class QLearningAgent:
-    def __init__(self, numTraining=100, epsilon=0.8, gamma=0.9, alpha=0.3):
-        self.numTraining = numTraining
-        self.epsilon = epsilon
-        self.initEpsilon = epsilon
-        self.discount = gamma
-        self.alpha = alpha
+    def __init__(self):
         self.qValues = Counter()
         self.episodesSoFar = 0
         self.accumTrainRewards = 0.0
         self.accumTestRewards = 0.0
-        self.training = True
+        self.training = False
         self.step = 0
 
     def __str__(self):
@@ -37,16 +33,16 @@ class QLearningAgent:
 
     def stopEpisode(self):
         self.step = 0
-        if self.episodesSoFar < self.numTraining:
+        if self.training:
             self.accumTrainRewards += self.episodeRewards
             self.epsilon -= (self.initEpsilon)*(1.0/(self.numTraining+1))
             if self.epsilon < 0: self.epsilon = 0
         else:
             self.accumTestRewards += self.episodeRewards
-        self.episodesSoFar += 1
-        if self.episodesSoFar >= self.numTraining:
             self.epsilon = 0.0
             self.alpha = 0.0
+        self.episodesSoFar += 1
+            
 
     def computeActionFromQValues(self, state):
         """
@@ -88,7 +84,7 @@ class QLearningAgent:
                     maxQ = q
             return maxQ
 
-    def getNextAction(self, state):
+    def getNextAction(self):
         """
             Compute the action to take in the current state.  With
             probability self.epsilon, we should take a random action and
@@ -96,16 +92,19 @@ class QLearningAgent:
             no legal actions, which is the case at the terminal state, you
             should choose None as the action.
         """
+        state = self.gameState
         legalActions = state.getValidActions()
         action = None
         if len(legalActions) == 0:
             return None
         else:
-            r = random.random()
-            if r < self.epsilon and self.training:
-                action = random.choice(legalActions)
-            else:
+            if not self.training:
                 action = self.getPolicy(state)
+            else:
+                if random.random() < self.epsilon:
+                    action = random.choice(legalActions)
+                else:
+                    action = self.getPolicy(state)
         self.step += 1
         self.observeTransition(state, action, state.getSuccessor(action), state.getReward(action, self.step))
         return action
@@ -140,6 +139,23 @@ class QLearningAgent:
 
     def stopTraining(self):
         self.training = False
+
+    def loadQValues(self):
+        """
+        Loads the q values into the agents qValues table from
+        the given pickle file.
+        """
+        with open('qvalues.pkl', 'rb') as f:
+            self.qValues = pickle.load(f)
+    
+    def startTraining(self, alpha=0.3, gamma=0.9, epsilon=0.8, numTraining=100):
+        self.training = True
+        self.discount = gamma
+        self.alpha = alpha
+        self.epsilon = epsilon
+        self.initEpsilon = epsilon
+        self.numTraining = numTraining
+
 
 ### APPROXIMATE Q-LEARNING AGENT
 # class ApproxQAgent: 

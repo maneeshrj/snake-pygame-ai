@@ -21,6 +21,7 @@ class Trainer:
         self.totalTrainRewards = 0.0
         print("Training agent for", trainingEpisodes, "episodes.")
         print("=" * 40)
+        self.agent.startTraining(numTraining=trainingEpisodes)
 
         trainingTrial = Trial()
         self.trainingTrial = trainingTrial
@@ -40,14 +41,14 @@ class Trainer:
             self.agent.startEpisode(gameState)
             gameOver = False
             while not gameOver:
-                state = game.gameState
-                # print(state)
-                action = self.agent.getNextAction(state)
+                action = self.agent.getNextAction()
 
                 reward = game.getReward(action)
                 nextState = game.getNextState(action)
                 gameOver, score = game.playStep(action)
-                self.agent.observeTransition(state, action, nextState, reward)
+
+                # I don't think this needs to be called here if it is called in getNextAction?
+                #self.agent.observeTransition(state, action, nextState, reward)
 
             game.gameOver()
             # if verbose and episode % (trainingEpisodes // 10) == 0:
@@ -63,9 +64,9 @@ class Trainer:
                 self.totalTrainRewards = self.agent.accumTrainRewards
                 print('Q Value dictionary size:', sys.getsizeof(self.agent.qValues), 'bytes')
                 print('Number of Q-states explored:', len(self.agent.qValues))
-                with open('qvalues.pickle', 'wb') as f:
+                with open('qvalues.pkl', 'wb') as f:
                     pickle.dump(self.agent.qValues, f, protocol=pickle.HIGHEST_PROTOCOL)
-                with open('qvalues.pickle', 'rb') as f:
+                with open('qvalues.pkl', 'rb') as f:
                     counts = pickle.load(f)
                     print('Length of dict from pickle', len(counts))      
 
@@ -96,8 +97,7 @@ class Trainer:
             step = 0
             while not gameOver:
                 step += 1
-                state = game.gameState
-                action = self.agent.getNextAction(state)
+                action = self.agent.getNextAction()
                 gameOver, score = game.playStep(action)
             gameLengths.append(step)
             gameScores.append(score)
@@ -114,22 +114,30 @@ class Trainer:
 class QTrainer(Trainer):
     pass
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train or test the agent')
     parser.add_argument("-a", "--agent", help="Agent to use", type=str, default="q", choices=["q", "approxq"])
     parser.add_argument("-n", "--num_episodes", help="Number of training episodes", type=int, default=4000)
     parser.add_argument("-t", "--test_runs", help="Number of test runs", type=int, default=10)
     parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true")
+    parser.add_argument("-l", "--load", help="Load qvalues from pickle file", action="store_true")
 
     args = parser.parse_args()
     agentType = args.agent
     numEpisodes = args.num_episodes
     testRuns = args.test_runs
     verbose = args.verbose
+    loadQValues = args.load
 
     if agentType == "q":
-        trainer = Trainer(QLearningAgent(numTraining=numEpisodes))
+        agent = QLearningAgent()
+
+        # This won't really have much of an effect because the food spawning will be different.
+        # Either we need a way to have the food position be the same between trials, or we
+        # We can just keep updating the q table through training until it has seen like every state.
+        if loadQValues:
+            agent.loadQValues()
+        trainer = Trainer(agent)
         trainer.train(trainingEpisodes=numEpisodes, verbose=verbose)
         trainer.test(testRuns=testRuns, graphics=True, verbose=verbose)
         # print(trainer.agent.qValues)
