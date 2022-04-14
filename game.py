@@ -12,11 +12,12 @@ import json
 # Hard      ->  40
 # Harder    ->  60
 # Impossible->  120
-difficulty = 10
+difficulty = 4
 
 # Window size
-frame_size_x = 250
-frame_size_y = 250
+wsize = 100
+frame_size_x = wsize
+frame_size_y = wsize
 
 # Checks for errors encountered
 check_errors = pygame.init()
@@ -43,8 +44,8 @@ blue = pygame.Color(0, 0, 255)
 fps_controller = pygame.time.Clock()
 
 # Game variables
-snake_pos = [100, 50]
-snake_body = [[100, 50], [100 - 10, 50], [100 - (2 * 10), 50]]
+snake_pos = [30, 20]
+snake_body = [[30, 20], [20, 20], [10, 20]]
 
 food_pos = [random.randrange(1, (frame_size_x // 10)) * 10, random.randrange(1, (frame_size_y // 10)) * 10]
 food_spawn = True
@@ -57,7 +58,7 @@ score = 0
 
 # Game Over
 def game_over():
-    my_font = pygame.font.SysFont('times new roman', 90)
+    my_font = pygame.font.SysFont('times new roman', wsize // 5)
     game_over_surface = my_font.render('YOU DIED', True, red)
     game_over_rect = game_over_surface.get_rect()
     game_over_rect.midtop = (frame_size_x / 2, frame_size_y / 4)
