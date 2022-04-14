@@ -19,6 +19,7 @@ class GameState:
         self.score = score
         self.frameX, self.frameY = frameSizeX, frameSizeY
         self.foodSpawned = True
+        self.timeout = False
 
     def getValidActions(self):
         # Gets the valid actions for the snake
@@ -70,33 +71,36 @@ class GameState:
         for block in self.pos[1:]:
             if self.pos[0] == block:
                 return True
-        return False
+        return self.timeout
 
     def getSuccessor(self, action):
         nextState = copy.deepcopy(self)
         nextState.moveSnake(action)
         return nextState
 
-    def getReward(self, action):
+    def getReward(self, action, step=0):
+        if step == 10000:
+            self.timeout = True
+            return -10.0
         nextState = self.getSuccessor(action)
         if (nextState.reachedFood()):
             # print('reward 1')
-            return 1.0
+            return 10.0
         if (nextState.isGameOver()):
             # print('reward -1')
-            return -1.0
+            return -5.0
         # print('no reward\n')
-        return 0.0
+        return -0.0001
 
     def __hash__(self):
         # TODO: Hash the attributes of the state for qlearning dictionary lookup
-        tup = (str(self.pos), tuple(self.foodPos))
+        tup = (str(self.pos), tuple(self.foodPos), self.direction)
         # print(tup)
         return hash(tup)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return (self.pos == other.pos) and (self.foodPos == other.foodPos)
+            return (self.pos == other.pos) and (self.foodPos == other.foodPos) and (self.direction == other.direction)
         else:
             return False
 
@@ -107,7 +111,8 @@ class GameState:
 class Trial:
     """
     A Trial is a collection of games and holds values that should stay consistent
-    from game to game
+    from game to game.
+      
     """
     def __init__(self):
         self.gameHistory = []
@@ -160,11 +165,18 @@ class Game:
                 [random.randrange(1, (self.frameX // 10)) * 10, random.randrange(1, (self.frameY // 10)) * 10])"""
         # loop through all positions in the frame in 10x10 increments
 
+        # if len(self.foodPosList) == 0:
+        #     for i in range((self.frameX//10)):
+        #         for j in range((self.frameY//10)):
+        #             self.foodPosList.append([i*10, j*10])
+        #     random.shuffle(self.foodPosList)
+
+        rng = np.random.RandomState(69)
         if len(self.foodPosList) == 0:
             for i in range((self.frameX//10)):
                 for j in range((self.frameY//10)):
                     self.foodPosList.append([i*10, j*10])
-            random.shuffle(self.foodPosList)
+            rng.shuffle(self.foodPosList)
         
         # Have to set food pos outside of init otherwise we pop the first element
         # before we have a chance to set the foodPosList in the trial
@@ -265,8 +277,8 @@ class Game:
     def getNextState(self, action):
         return self.gameState.getSuccessor(action)
 
-    def getReward(self, action):
-        return self.gameState.getReward(action)
+    def getReward(self, action, step=0):
+        return self.gameState.getReward(action, step)
 
     def getScreenAsNumpy(self):
         # Get the current pygame window as a numpy array

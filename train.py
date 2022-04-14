@@ -2,15 +2,15 @@ from Snake import Game, GameState, Trial
 from qLearningAgent import QLearningAgent
 import numpy as np
 import random
-import argparse
-import json
-
+import argparse, sys
+import json, pickle
 
 class Trainer:
     def __init__(self, agent):
         self.agent = agent
         self.trainingTrial = None
         self.testingTrial = None
+        self.totalTrainRewards = 0.0
 
     def train(self, trainingEpisodes=1000, verbose=False):
         """
@@ -18,6 +18,7 @@ class Trainer:
         Each episode is a complete game.
         """
         #random.seed(42)
+        self.totalTrainRewards = 0.0
         print("Training agent for", trainingEpisodes, "episodes.")
         print("=" * 40)
 
@@ -49,11 +50,27 @@ class Trainer:
                 self.agent.observeTransition(state, action, nextState, reward)
 
             game.gameOver()
-            if verbose and episode % (trainingEpisodes // 10) == 0:
-                print(f"Finished episode {episode} of {trainingEpisodes}.")
-                print('Accumulated rewards', self.agent.episodeRewards)
+            # if verbose and episode % (trainingEpisodes // 10) == 0:
+            #     print(f"Finished episode {episode} of {trainingEpisodes}.")
+            #     print('Accumulated rewards', self.agent.episodeRewards)
+            
             self.agent.stopEpisode()
+
+            if episode % (trainingEpisodes // 4) == 0 and verbose:
+                print(f"Finished episode {episode} of {trainingEpisodes}.")
+                self.totalTrainRewards = self.agent.accumTrainRewards - self.totalTrainRewards
+                print('Accumulated rewards at 25% training interval:', self.totalTrainRewards)
+                self.totalTrainRewards = self.agent.accumTrainRewards
+                print('Q Value dictionary size:', sys.getsizeof(self.agent.qValues), 'bytes')
+                print('Number of Q-states explored:', len(self.agent.qValues))
+                with open('qvalues.pickle', 'wb') as f:
+                    pickle.dump(self.agent.qValues, f, protocol=pickle.HIGHEST_PROTOCOL)
+                with open('qvalues.pickle', 'rb') as f:
+                    counts = pickle.load(f)
+                    print('Length of dict from pickle', len(counts))      
+
         self.agent.stopTraining()
+        print('Average rewards per training episode:', (self.agent.accumTrainRewards/trainingEpisodes))
 
     def test(self, testRuns=10, graphics=False, verbose=False):
         """
@@ -76,13 +93,23 @@ class Trainer:
             game.setFoodPos()
             self.agent.startEpisode(gameState)
             gameOver = False
+            step = 0
             while not gameOver:
+                step += 1
                 state = game.gameState
                 action = self.agent.getNextAction(state)
                 gameOver, score = game.playStep(action)
+            gameLengths.append(step)
+            gameScores.append(score)
             self.agent.stopEpisode()
             game.gameOver()
 
+        
+        print("Average game:\t\t", np.mean(gameLengths), "timesteps")
+        print("Min/Max length:\t", min(gameLengths), '/', max(gameLengths), "timesteps")
+        print("Average score:\t\t", np.mean(gameScores))
+        print("Min/Max score:\t\t", min(gameScores), '/', max(gameScores))
+        print(gameScores, ' ... ', gameLengths)
 
 class QTrainer(Trainer):
     pass

@@ -5,9 +5,10 @@ import featureExtractors as feat
 
 ### EXACT Q LEARNING AGENT
 class QLearningAgent:
-    def __init__(self, numTraining=100, epsilon=0.5, gamma=0.8, alpha=0.2):
+    def __init__(self, numTraining=100, epsilon=0.8, gamma=0.9, alpha=0.3):
         self.numTraining = numTraining
         self.epsilon = epsilon
+        self.initEpsilon = epsilon
         self.discount = gamma
         self.alpha = alpha
         self.qValues = Counter()
@@ -15,6 +16,7 @@ class QLearningAgent:
         self.accumTrainRewards = 0.0
         self.accumTestRewards = 0.0
         self.training = True
+        self.step = 0
 
     def __str__(self):
         return "QLearningAgent"
@@ -31,10 +33,14 @@ class QLearningAgent:
         self.gameState = gameState
         self.lastAction = None
         self.episodeRewards = 0.0
+        self.step = 0
 
     def stopEpisode(self):
+        self.step = 0
         if self.episodesSoFar < self.numTraining:
             self.accumTrainRewards += self.episodeRewards
+            self.epsilon -= (self.initEpsilon)*(1.0/(self.numTraining+1))
+            if self.epsilon < 0: self.epsilon = 0
         else:
             self.accumTestRewards += self.episodeRewards
         self.episodesSoFar += 1
@@ -100,7 +106,8 @@ class QLearningAgent:
                 action = random.choice(legalActions)
             else:
                 action = self.getPolicy(state)
-        self.observeTransition(state, action, state.getSuccessor(action), state.getReward(action))
+        self.step += 1
+        self.observeTransition(state, action, state.getSuccessor(action), state.getReward(action, self.step))
         return action
 
     def update(self, state, action, nextState, reward):
@@ -128,7 +135,8 @@ class QLearningAgent:
             on the same arguments
         """
         self.episodeRewards += deltaReward
-        self.update(state, action, nextState, deltaReward)
+        if self.training:
+            self.update(state, action, nextState, deltaReward)
 
     def stopTraining(self):
         self.training = False
