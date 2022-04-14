@@ -12,7 +12,7 @@ class Trainer:
         self.testingTrial = None
         self.totalTrainRewards = 0.0
 
-    def train(self, trainingEpisodes=1000, verbose=False):
+    def train(self, trainingEpisodes=1000, verbose=False, saveWeights=True):
         """
         Train the agent for the specified number of episodes.
         Each episode is a complete game.
@@ -64,11 +64,12 @@ class Trainer:
                 self.totalTrainRewards = self.agent.accumTrainRewards
                 print('Q Value dictionary size:', sys.getsizeof(self.agent.qValues), 'bytes')
                 print('Number of Q-states explored:', len(self.agent.qValues))
-                with open('qvalues.pkl', 'wb') as f:
-                    pickle.dump(self.agent.qValues, f, protocol=pickle.HIGHEST_PROTOCOL)
-                with open('qvalues.pkl', 'rb') as f:
-                    counts = pickle.load(f)
-                    print('Length of dict from pickle', len(counts))      
+                if saveWeights:
+                    with open('qvalues.pkl', 'wb') as f:
+                        pickle.dump(self.agent.qValues, f, protocol=pickle.HIGHEST_PROTOCOL)
+                    with open('qvalues.pkl', 'rb') as f:
+                        counts = pickle.load(f)
+                        print('Length of qval dict saved:', len(counts))      
 
         self.agent.stopTraining()
         print('Average rewards per training episode:', (self.agent.accumTrainRewards/trainingEpisodes))
@@ -121,6 +122,7 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--test_runs", help="Number of test runs", type=int, default=10)
     parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true")
     parser.add_argument("-l", "--load", help="Load qvalues from pickle file", action="store_true")
+    parser.add_argument("-s", "--save_weights", help="Save trained weights", action="store_true")
 
     args = parser.parse_args()
     agentType = args.agent
@@ -128,21 +130,15 @@ if __name__ == "__main__":
     testRuns = args.test_runs
     verbose = args.verbose
     loadQValues = args.load
+    saveWeights= args.save_weights
 
     if agentType == "q":
         agent = QLearningAgent()
-
-        # This won't really have much of an effect because the food spawning will be different.
-        # Either we need a way to have the food position be the same between trials, or we
-        # We can just keep updating the q table through training until it has seen like every state.
         if loadQValues:
             agent.loadQValues()
         trainer = Trainer(agent)
-        trainer.train(trainingEpisodes=numEpisodes, verbose=verbose)
-        trainer.test(testRuns=testRuns, graphics=True, verbose=verbose)
-        # print(trainer.agent.qValues)
-        # with open('qValues.json', 'w') as f:
-        #     json.dump(trainer.agent.qValues, f)
+        trainer.train(trainingEpisodes=numEpisodes, verbose=verbose, saveWeights=saveWeights)
+        trainer.test(testRuns=testRuns, verbose=verbose)
 
 # class ApproxQTrainer:
 #     def __init__(self, episodes=10):
