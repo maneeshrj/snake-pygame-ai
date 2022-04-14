@@ -104,8 +104,42 @@ class GameState:
         return not self.__eq__(other)
 
 
+class Trial:
+    """
+    A Trial is a collection of games and holds values that should stay consistent
+    from game to game
+    """
+    def __init__(self):
+        self.gameHistory = []
+        self.foodPosList = []
+        self.currentGame = None
+
+    def setCurrentGame(self, game):
+        # Set the current game
+        self.currentGame = game
+        
+        # If this is the first game in the trial, set the foodPosList that should be
+        # used for the trial
+        if len(self.gameHistory) == 0 and len(self.foodPosList) == 0:
+            print('Setting foodPosList')
+            self.foodPosList = game.foodPosList.copy()
+
+        # Add the game to the game history
+        self.gameHistory.append(game)
+
+    def setFoodPosList(self, foodPosList):
+        self.foodPosList = foodPosList.copy()
+        
+    def getFoodPosList(self):
+        return self.foodPosList.copy()
+
+    def __str__(self):
+        return 'Current Game: ' + str(self.currentGame) + '\n' + 'Game History: ' + str(self.gameHistory) + '\n' + 'Food Pos List: ' + str(self.foodPosList)
+
+
+
 class Game:
-    def __init__(self, gameState=GameState(), graphics=False, framerate=10, plain=False):
+    def __init__(self, gameState=GameState(), graphics=False, framerate=10, plain=False, foodPosList=[]):
         self.graphics = graphics
         self.gameState = gameState
         # Window size
@@ -115,18 +149,26 @@ class Game:
         self.framerate = framerate
         self.first_step = True
         self.plain = plain
+        self.foodPosList = foodPosList
 
-        random.seed(69)
+        # FIXME: Setting the random seed causes the snake to be deterministic which 
+        # prevents the snake from taking different path and learning the q table.
+        #random.seed(69)
         # generate 100 random food positions as a generator to call next()
-        self.foodPosList = []
-        for i in range((self.frameX // 10) ** 2):
+        """for i in range((self.frameX // 10) ** 2):
             self.foodPosList.append(
-                [random.randrange(1, (self.frameX // 10)) * 10, random.randrange(1, (self.frameY // 10)) * 10])
+                [random.randrange(1, (self.frameX // 10)) * 10, random.randrange(1, (self.frameY // 10)) * 10])"""
         # loop through all positions in the frame in 10x10 increments
-        """for i in range((self.frameX//10) - 1):
-            for j in range((self.frameY//10) - 1):
-                self.foodPosList.append([i*10, j*10])"""
-        self.setFoodPos()
+
+        if len(self.foodPosList) == 0:
+            for i in range((self.frameX//10)):
+                for j in range((self.frameY//10)):
+                    self.foodPosList.append([i*10, j*10])
+            random.shuffle(self.foodPosList)
+        
+        # Have to set food pos outside of init otherwise we pop the first element
+        # before we have a chance to set the foodPosList in the trial
+        # self.setFoodPos()
 
         # Check for errors
         if (self.graphics):
@@ -154,6 +196,7 @@ class Game:
 
         self.gameState.foodPos = self.foodPos
         self.gameState.foodSpawned = True
+        
 
     def playStep(self, action):
         self.gameState.moveSnake(action)
@@ -231,6 +274,8 @@ class Game:
             screen = pygame.display.get_surface()
             screen_array = pygame.surfarray.array3d(screen)
             return np.asarray(screen_array)
+
+
 
 
 if __name__ == '__main__':

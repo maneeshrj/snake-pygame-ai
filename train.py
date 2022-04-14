@@ -1,4 +1,4 @@
-from Snake import Game, GameState
+from Snake import Game, GameState, Trial
 from qLearningAgent import QLearningAgent
 import numpy as np
 import random
@@ -9,22 +9,33 @@ import json
 class Trainer:
     def __init__(self, agent):
         self.agent = agent
+        self.trainingTrial = None
+        self.testingTrial = None
 
     def train(self, trainingEpisodes=1000, verbose=False):
         """
         Train the agent for the specified number of episodes.
         Each episode is a complete game.
         """
-        random.seed(42)
+        #random.seed(42)
         print("Training agent for", trainingEpisodes, "episodes.")
         print("=" * 40)
+
+        trainingTrial = Trial()
+        self.trainingTrial = trainingTrial
+
         for episode in range(trainingEpisodes):
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=100,
                                   frameSizeY=100)
             if verbose and episode % (trainingEpisodes // 5) == 0:
-                game = Game(gameState=gameState, graphics=True, plain=True)
+                trainGraphics = True
             else:
-                game = Game(gameState=gameState, graphics=False, plain=True)
+                trainGraphics = False
+            game = Game(gameState=gameState, graphics=trainGraphics, plain=True,
+                        foodPosList=trainingTrial.getFoodPosList())
+            trainingTrial.setCurrentGame(game)
+            game.setFoodPos()
+
             self.agent.startEpisode(gameState)
             gameOver = False
             while not gameOver:
@@ -52,9 +63,17 @@ class Trainer:
         print("Testing agent for", testRuns, "runs.")
         gameLengths, gameScores = [], []
         print(testRuns)
+        testingTrial = Trial()
+        testingTrial.setFoodPosList(self.trainingTrial.getFoodPosList())
+        self.testingTrial = testingTrial
+
         for i in range(testRuns):
-            gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=100, frameSizeY=100)
-            game = Game(gameState=gameState, graphics=True, plain=True)
+            gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT',
+                                  frameSizeX=100, frameSizeY=100)
+            game = Game(gameState=gameState, graphics=True, plain=True,
+                        foodPosList=testingTrial.getFoodPosList())
+            testingTrial.setCurrentGame(game)
+            game.setFoodPos()
             self.agent.startEpisode(gameState)
             gameOver = False
             while not gameOver:

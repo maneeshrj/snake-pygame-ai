@@ -6,7 +6,7 @@ import pygame, sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Snake import Game, GameState
+from Snake import Game, GameState, Trial
 from agents import AGENT_MAP, getAgentName
 
 WINDOW_SIZE_MAP = {
@@ -67,6 +67,7 @@ if __name__ == "__main__":
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=frameSizeX,
                                   frameSizeY=frameSizeY)
             env = Game(gameState, graphics=useGraphics, plain=plain, framerate=framerate)
+            env.setFoodPos()
             agent.startEpisode(gameState)
             step = 0
             if verbose: print("Starting test " + str(i + 1) + ":")
