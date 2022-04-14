@@ -12,7 +12,7 @@ class Trainer:
         self.testingTrial = None
         self.totalTrainRewards = 0.0
 
-    def train(self, trainingEpisodes=1000, verbose=False):
+    def train(self, trainingEpisodes=1000, verbose=False, saveWeights=True):
         """
         Train the agent for the specified number of episodes.
         Each episode is a complete game.
@@ -63,11 +63,12 @@ class Trainer:
                 self.totalTrainRewards = self.agent.accumTrainRewards
                 print('Q Value dictionary size:', sys.getsizeof(self.agent.qValues), 'bytes')
                 print('Number of Q-states explored:', len(self.agent.qValues))
-                with open('qvalues.pickle', 'wb') as f:
-                    pickle.dump(self.agent.qValues, f, protocol=pickle.HIGHEST_PROTOCOL)
-                with open('qvalues.pickle', 'rb') as f:
-                    counts = pickle.load(f)
-                    print('Length of dict from pickle', len(counts))      
+                if saveWeights:
+                    with open('qvalues.pickle', 'wb') as f:
+                        pickle.dump(self.agent.qValues, f, protocol=pickle.HIGHEST_PROTOCOL)
+                    with open('qvalues.pickle', 'rb') as f:
+                        counts = pickle.load(f)
+                        print('Length of qval dict saved:', len(counts))      
 
         self.agent.stopTraining()
         print('Average rewards per training episode:', (self.agent.accumTrainRewards/trainingEpisodes))
@@ -121,16 +122,18 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--num_episodes", help="Number of training episodes", type=int, default=4000)
     parser.add_argument("-t", "--test_runs", help="Number of test runs", type=int, default=10)
     parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true")
+    parser.add_argument("-s", "--save_weights", help="Save trained weights", action="store_true")
 
     args = parser.parse_args()
     agentType = args.agent
     numEpisodes = args.num_episodes
     testRuns = args.test_runs
     verbose = args.verbose
+    saveWeights= args.save_weights
 
     if agentType == "q":
         trainer = Trainer(QLearningAgent(numTraining=numEpisodes))
-        trainer.train(trainingEpisodes=numEpisodes, verbose=verbose)
+        trainer.train(trainingEpisodes=numEpisodes, verbose=verbose, saveWeights=saveWeights)
         trainer.test(testRuns=testRuns, graphics=True, verbose=verbose)
         # print(trainer.agent.qValues)
         # with open('qValues.json', 'w') as f:
