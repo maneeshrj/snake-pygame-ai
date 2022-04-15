@@ -1,5 +1,5 @@
 from Snake import Game, GameState, Trial
-from qLearningAgent import QLearningAgent
+from qLearningAgent import QLearningAgent, ApproxQAgent
 import numpy as np
 import random
 import argparse, sys
@@ -137,13 +137,11 @@ if __name__ == "__main__":
         trainer = Trainer(agent)
         trainer.train(trainingEpisodes=numEpisodes, verbose=verbose, saveWeights=saveWeights)
         trainer.test(testRuns=testRuns, verbose=verbose)
-    """elif agentType == "approxq":
-        agent = ApproximateQLearningAgent()
-        if loadQValues:
-            agent.loadQValues()
+    elif agentType == "approxq":
+        agent = ApproxQAgent()
         trainer = Trainer(agent)
         trainer.train(trainingEpisodes=numEpisodes, verbose=verbose, saveWeights=saveWeights)
-        trainer.test(testRuns=testRuns, verbose=verbose)"""
+        trainer.test(testRuns=testRuns, verbose=verbose)
 
 
 # class ApproxQTrainer:

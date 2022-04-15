@@ -1,6 +1,6 @@
 import random
 import pickle
-from util import Counter
+from util import Counter, updatePosition, manhattanDistance
 import featureExtractors as feat
 
 
@@ -103,8 +103,10 @@ class QLearningAgent:
             else:
                 if random.random() < self.epsilon:
                     action = random.choice(legalActions)
+                    #print(f"Picking a random action {action}")
                 else:
                     action = self.getPolicy(state)
+                    #print(f"Picking a policy action {action}")
         self.step += 1
         self.observeTransition(state, action, state.getSuccessor(action), state.getReward(action, self.step))
         return action
@@ -162,6 +164,56 @@ class QLearningAgent:
             qValDict[key] = val
         return qValDict 
 
+def getFeatures(state, action):
+    features = Counter()
+    features["bias"] = 1.0
+
+    # all features bases on next state
+    curPos = state.getSnakePos()
+    curHead = curPos[0]
+    nextPos = updatePosition(curHead, action)
+    foodPos = state.getFoodPos()
+    
+    # get distance to food as a number between 0 and 1
+    features["foodDist"] = manhattanDistance(nextPos, foodPos) / ((state.frameX // 10) * (state.frameY // 10))
+
+    # the snake looks in the direction of the action and has three features
+    # the min distance to an obstacle in the direction of the action
+    # the min distance to an obstacle to the left of the action
+    # the min distance to an obstacle to the right of the action
+    # an obstacle is the snakes body or the wall
+    # TODO: Implement this!
+
+    features.divideAll(10.0)
+    return features
+class ApproxQAgent(QLearningAgent):
+    def __init__(self, **args):
+        QLearningAgent.__init__(self, **args)
+        self.weights = Counter()
+    
+    def getWeights(self):
+        return self.weights
+
+    def getQValue(self, state, action):
+        """
+          Should return Q(state,action) = w * featureVector
+          where * is the dotProduct operator
+        """
+        "*** YOUR CODE HERE ***"
+        # Given a state, action pair, return the Q value
+        # Use the weights to compute the Q value
+        features = getFeatures(state, action)
+        q_value = 0
+        for feature in features:
+          q_value += self.weights[feature] * features[feature]
+
+        return q_value
+    
+    def update(self, state, action, nextState, reward):
+        difference = ((reward) + (self.discount * self.getValue(nextState))) - (self.getQValue(state, action))
+        for feature, value in getFeatures(state, action).items():
+          self.weights[feature] = (self.weights[feature]) + (self.alpha * difference * value)
+        
 ### APPROXIMATE Q-LEARNING AGENT
 # class ApproxQAgent: 
 #     def __init__(self, epsilon=1.0, gamma=0.99, alpha=0.25):

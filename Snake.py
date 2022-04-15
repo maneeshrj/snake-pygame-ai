@@ -106,8 +106,24 @@ class GameState:
 
     def __ne__(self, other):
         return not self.__eq__(other)
-
-
+    
+    def getAsMatrix(self):
+        """
+        Returns the state as a matrix where the matrix is the frame size in 
+        increments of 10 and the snake position is represented by 1's and the 
+        food position is represented by 2's
+        """
+        matrix = np.zeros((self.frameX // 10, self.frameY // 10))
+        for snakePos in self.pos:
+            snakeX = snakePos[0] // 10
+            snakeY = snakePos[1] // 10
+            print(snakeX, snakeY)
+            matrix[snakeY][snakeX] = 1
+        foodX = self.foodPos[0] // 10
+        foodY = self.foodPos[1] // 10
+        matrix[foodY][foodX] = 2
+        return matrix
+    
 class Trial:
     """
     A Trial is a collection of games and holds values that should stay consistent
@@ -208,6 +224,7 @@ class Game:
 
         self.gameState.foodPos = self.foodPos
         self.gameState.foodSpawned = True
+        print(self.gameState.getAsMatrix())
         
 
     def playStep(self, action):
