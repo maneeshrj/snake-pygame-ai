@@ -142,13 +142,14 @@ class QLearningAgent:
     def stopTraining(self):
         self.training = False
 
-    def loadQValues(self):
+    def loadQValues(self, fname='qvalues.pkl'):
         """
         Loads the q values into the agents qValues table from
         the given pickle file.
         """
-        with open('qvalues.pkl', 'rb') as f:
-            self.qValues = pickle.load(f)
+        with open(fname, 'rb') as f:
+            d = pickle.load(f)
+            self.qValues.loadDict(d)
     
     def startTraining(self, alpha=0.3, gamma=0.8, epsilon=0.8, numTraining=100):
         self.training = True
@@ -157,12 +158,6 @@ class QLearningAgent:
         self.epsilon = epsilon
         self.initEpsilon = epsilon
         self.numTraining = numTraining
-    
-    def getQValuesAsDictionary(self):
-        qValDict = {}
-        for key, val in self.qValues.items():
-            qValDict[key] = val
-        return qValDict 
 
 def getFeatures(state, action):
     features = Counter()
@@ -199,7 +194,6 @@ class ApproxQAgent(QLearningAgent):
           Should return Q(state,action) = w * featureVector
           where * is the dotProduct operator
         """
-        "*** YOUR CODE HERE ***"
         # Given a state, action pair, return the Q value
         # Use the weights to compute the Q value
         features = getFeatures(state, action)

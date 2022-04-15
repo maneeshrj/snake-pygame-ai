@@ -90,7 +90,7 @@ class GameState:
             # print('reward -1')
             return -5.0
         # print('no reward\n')
-        return -0.0001
+        return 0.0
 
     def __hash__(self):
         # TODO: Hash the attributes of the state for qlearning dictionary lookup
@@ -117,11 +117,11 @@ class GameState:
         for snakePos in self.pos:
             snakeX = snakePos[0] // 10
             snakeY = snakePos[1] // 10
-            print(snakeX, snakeY)
-            matrix[snakeY][snakeX] = 1
+            # print(snakeX, snakeY)
+            matrix[snakeX, snakeY] = 1
         foodX = self.foodPos[0] // 10
         foodY = self.foodPos[1] // 10
-        matrix[foodY][foodX] = 2
+        matrix[foodX, foodY] = 2
         return matrix
     
 class Trial:
@@ -160,7 +160,7 @@ class Trial:
 
 
 class Game:
-    def __init__(self, gameState=GameState(), graphics=False, framerate=10, plain=False, foodPosList=[]):
+    def __init__(self, gameState=GameState(), graphics=False, framerate=10, plain=False, foodPosList=[], randomFood=False):
         self.graphics = graphics
         self.gameState = gameState
         # Window size
@@ -186,13 +186,20 @@ class Game:
         #         for j in range((self.frameY//10)):
         #             self.foodPosList.append([i*10, j*10])
         #     random.shuffle(self.foodPosList)
-
-        rng = np.random.RandomState(69)
-        if len(self.foodPosList) == 0:
+        
+        if randomFood:
+            rng = np.random.RandomState()
             for i in range((self.frameX//10)):
                 for j in range((self.frameY//10)):
                     self.foodPosList.append([i*10, j*10])
             rng.shuffle(self.foodPosList)
+        else:
+            rng = np.random.RandomState(2022)
+            if len(self.foodPosList) == 0:
+                for i in range((self.frameX//10)):
+                    for j in range((self.frameY//10)):
+                        self.foodPosList.append([i*10, j*10])
+                rng.shuffle(self.foodPosList)
         
         # Have to set food pos outside of init otherwise we pop the first element
         # before we have a chance to set the foodPosList in the trial
@@ -224,7 +231,7 @@ class Game:
 
         self.gameState.foodPos = self.foodPos
         self.gameState.foodSpawned = True
-        print(self.gameState.getAsMatrix())
+        # print(self.gameState.getAsMatrix())
         
 
     def playStep(self, action):

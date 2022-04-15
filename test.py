@@ -110,7 +110,7 @@ if __name__ == "__main__":
         print('-' * 40)
         print(testRuns, "test runs completed in", elapsedTime, "mins")
         print("Average game:\t\t", avgGameLengths[-1], "timesteps")
-        print("Min/Max length:\t", min(gameLengths), '/', max(gameLengths), "timesteps")
+        print("Min/Max game length:\t", min(gameLengths), '/', max(gameLengths), "timesteps")
         print("Average score:\t\t", avgGameScores[-1])
         print("Min/Max score:\t\t", min(gameScores), '/', max(gameScores))
         print('=' * 40)

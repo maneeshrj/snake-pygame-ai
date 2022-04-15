@@ -76,10 +76,19 @@ class Counter(dict):
     subtracted or multiplied together.  See below for details.  They can
     also be normalized and their total count and arg max can be extracted.
     """
-
+    def loadDict(self, d):
+        for key, val in d.items():
+            self[key] = val
+        
     def __getitem__(self, idx):
         self.setdefault(idx, 0)
         return dict.__getitem__(self, idx)
+    
+    def asDict(self):
+        d = {}
+        for key, val in self.items():
+            d[key] = val
+        return d 
 
     def incrementAll(self, keys, count):
         """

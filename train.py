@@ -2,27 +2,29 @@ from Snake import Game, GameState, Trial
 from qLearningAgent import QLearningAgent, ApproxQAgent
 import numpy as np
 import random
-import argparse, sys
+import argparse, sys, time
 import json, pickle
 
 class Trainer:
-    def __init__(self, agent):
+    def __init__(self, agent, trainRandom=False, testRandom=False):
         self.agent = agent
         self.trainingTrial = None
         self.testingTrial = None
         self.totalTrainRewards = 0.0
+        self.trainRandom = trainRandom
+        self.testRandom = testRandom
 
-    def train(self, trainingEpisodes=1000, verbose=False, saveWeights=True):
+    def train(self, trainingEpisodes=1000, verbose=False, saveWeights=None):
         """
         Train the agent for the specified number of episodes.
         Each episode is a complete game.
         """
         #random.seed(42)
         self.totalTrainRewards = 0.0
-        print("Training agent for", trainingEpisodes, "episodes.")
-        print("=" * 40)
+        print("Training agent for", trainingEpisodes, "episodes."+"="*40)
         self.agent.startTraining(numTraining=trainingEpisodes)
 
+        startTime = time.time()
         trainingTrial = Trial()
         self.trainingTrial = trainingTrial
 
@@ -42,37 +44,31 @@ class Trainer:
             gameOver = False
             while not gameOver:
                 action = self.agent.getNextAction()
-
                 reward = game.getReward(action)
                 nextState = game.getNextState(action)
                 gameOver, score = game.playStep(action)
 
-                # I don't think this needs to be called here if it is called in getNextAction?
-                #self.agent.observeTransition(state, action, nextState, reward)
-
             game.gameOver()
-            # if verbose and episode % (trainingEpisodes // 10) == 0:
-            #     print(f"Finished episode {episode} of {trainingEpisodes}.")
-            #     print('Accumulated rewards', self.agent.episodeRewards)
-            
             self.agent.stopEpisode()
 
             if episode % (trainingEpisodes // 4) == 0 and verbose:
                 print(f"Finished episode {episode} of {trainingEpisodes}.")
                 self.totalTrainRewards = self.agent.accumTrainRewards - self.totalTrainRewards
-                print('Accumulated rewards at 25% training interval:', self.totalTrainRewards)
+                print('  Accumulated rewards at 25% training interval:', self.totalTrainRewards)
                 self.totalTrainRewards = self.agent.accumTrainRewards
-                qValDict = self.agent.getQValuesAsDictionary()
-                print('Q Value dictionary size:', sys.getsizeof(qValDict), 'bytes')
-                print('Number of Q-states explored:', len(qValDict))
+                qValDict = self.agent.qValues.asDict()
+                print('  Q Value dictionary size:', sys.getsizeof(qValDict), 'bytes')
+                print('  Number of Q-states explored:', len(qValDict))
                 if saveWeights:
                     with open('qvalues.pkl', 'wb') as f:
                         pickle.dump(qValDict, f, protocol=pickle.HIGHEST_PROTOCOL)
                     with open('qvalues.pkl', 'rb') as f:
                         counts = pickle.load(f)
-                        print('Length of qval dict saved:', len(counts))
-
+                        print('  Length of qval dict saved:', len(counts))
+        
         self.agent.stopTraining()
+        elapsedTime = round((time.time() - startTime) / 60, 2)
+        print('\n'+'='*40+'\nTraining completed in', elapsedTime, 'mins.')
         print('Average rewards per training episode:', (self.agent.accumTrainRewards/trainingEpisodes))
 
     def test(self, testRuns=10, graphics=False, verbose=False):
@@ -80,18 +76,18 @@ class Trainer:
         Test the agent for the specified number of runs.
         Each run is a complete game.
         """
-        print("Testing agent for", testRuns, "runs.")
+        print("Testing agent for", testRuns, "runs.\n"+'='*40)
         gameLengths, gameScores = [], []
-        print(testRuns)
         testingTrial = Trial()
-        testingTrial.setFoodPosList(self.trainingTrial.getFoodPosList())
+        if not self.testRandom:
+            testingTrial.setFoodPosList(self.trainingTrial.getFoodPosList())
         self.testingTrial = testingTrial
 
         for i in range(testRuns):
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT',
                                   frameSizeX=100, frameSizeY=100)
             game = Game(gameState=gameState, graphics=True, plain=True,
-                        foodPosList=testingTrial.getFoodPosList())
+                        foodPosList=testingTrial.getFoodPosList(), randomFood=self.testRandom)
             testingTrial.setCurrentGame(game)
             game.setFoodPos()
             self.agent.startEpisode(gameState)
@@ -106,12 +102,13 @@ class Trainer:
             self.agent.stopEpisode()
             game.gameOver()
 
-        
         print("Average game:\t\t", np.mean(gameLengths), "timesteps")
-        print("Min/Max length:\t", min(gameLengths), '/', max(gameLengths), "timesteps")
+        print("Min/Max game length:\t", min(gameLengths), '/', max(gameLengths), "timesteps")
         print("Average score:\t\t", np.mean(gameScores))
         print("Min/Max score:\t\t", min(gameScores), '/', max(gameScores))
-        print(gameScores, ' ... ', gameLengths)
+        if verbose:
+            print('Scores:', gameScores)
+            print('Game lengths:', gameLengths)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train or test the agent')
@@ -121,6 +118,7 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true")
     parser.add_argument("-l", "--load", help="Load qvalues from pickle file", action="store_true")
     parser.add_argument("-s", "--save_weights", help="Save trained weights", action="store_true")
+    parser.add_argument("-r", "--test_random", help="Random food spawn during testing", action="store_true")
 
     args = parser.parse_args()
     agentType = args.agent
@@ -129,17 +127,18 @@ if __name__ == "__main__":
     verbose = args.verbose
     loadQValues = args.load
     saveWeights= args.save_weights
+    testRandom = args.test_random
 
     if agentType == "q":
         agent = QLearningAgent()
         if loadQValues:
-            agent.loadQValues()
-        trainer = Trainer(agent)
+            agent.loadQValues('qvalues.pkl')
+        trainer = Trainer(agent, testRandom=testRandom)
         trainer.train(trainingEpisodes=numEpisodes, verbose=verbose, saveWeights=saveWeights)
         trainer.test(testRuns=testRuns, verbose=verbose)
     elif agentType == "approxq":
         agent = ApproxQAgent()
-        trainer = Trainer(agent)
+        trainer = Trainer(agent, testRandom=True)
         trainer.train(trainingEpisodes=numEpisodes, verbose=verbose, saveWeights=saveWeights)
         trainer.test(testRuns=testRuns, verbose=verbose)
 
