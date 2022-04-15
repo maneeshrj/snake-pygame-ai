@@ -12,7 +12,7 @@ import json
 # Hard      ->  40
 # Harder    ->  60
 # Impossible->  120
-difficulty = 4
+difficulty = 8
 
 # Window size
 wsize = 100
@@ -146,7 +146,10 @@ while True:
 
     # Spawning food on the screen
     if not food_spawn:
-        food_pos = [random.randrange(1, (frame_size_x // 10)) * 10, random.randrange(1, (frame_size_y // 10)) * 10]
+        while True:
+            food_pos = [random.randrange(1, (frame_size_x // 10)) * 10, random.randrange(1, (frame_size_y // 10)) * 10]
+            if food_pos not in snake_body:
+                break
     food_spawn = True
 
     # GFX
