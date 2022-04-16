@@ -188,13 +188,33 @@ def getFeatures(state, action, extractor=1):
         nextX, nextY = nextHead[0]//10, nextHead[1]//10
         matrix = state.getAsMatrix()
         # print(headX, headY)
-        features["obstacleAhead"] = 1.
-        # the snake looks in the direction of the action and has three features
+        features["obstacleAhead"] = 0.
+        # the snake looks in the direction of the action and has three features  
         if nextX > 0 and nextX < matrix.shape[0]:
             if nextY > 0 and nextY < matrix.shape[1]:
-                if matrix[nextX, nextY] <= 0:
-                    features["obstacleAhead"] = 0.
-                
+                if action == 'RIGHT':
+                    for i in range(nextX, matrix.shape[0]):
+                        features['obstacleAhead'] = i
+                        if matrix[i,nextY] == 1:
+                            break
+                if action == 'LEFT':
+                    for i in range(nextX, -1, -1):
+                        features['obstacleAhead'] = i
+                        if matrix[i,nextY] == 1:
+                            break
+                if action == 'DOWN':
+                    for i in range(nextY, matrix.shape[1]):
+                        features['obstacleAhead'] = i
+                        if matrix[nextX,i] == 1:
+                            break
+                if action == 'UP':
+                    for i in range(nextY, -1, -1):
+                        features['obstacleAhead'] = i
+                        if matrix[nextX,i] == 1:
+                            break                
+                      
+        features["obstacleAhead"] = features["obstacleAhead"] / (state.frameX // 10)
+
         # the min distance to an obstacle in the direction of the action
         # the min distance to an obstacle to the left of the action
         # the min distance to an obstacle to the right of the action

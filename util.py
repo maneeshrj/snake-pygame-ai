@@ -2,10 +2,10 @@ from math import sqrt
 
 
 def generateFixedActions():
-    actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'DOWN', 'DOWN', 'LEFT', 'LEFT', 'LEFT', 'LEFT', 'UP',
-               'UP', 'UP', 'UP']
-    # actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'LEFT', 'UP','UP','UP','UP','UP']
-    # actions = ['RIGHT']*63
+    actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 
+               'DOWN', 'DOWN', 'DOWN', 'DOWN', 
+               'LEFT', 'LEFT', 'LEFT', 'LEFT', 
+               'UP', 'UP', 'UP', 'UP']
     return actions
 
 

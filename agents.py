@@ -4,11 +4,7 @@ from reflexAgent import ReflexAgent
 from randomAgent import RandomAgent
 from qLearningAgent import QLearningAgent, ApproxQAgent
 
-# from qLearningAgent import ApproxQAgent
-
-
 AGENT_MAP = {
-    # 'approxq': ag.approxQAgent,
     'reflex': ReflexAgent,
     'random': RandomAgent,
     'exactq': QLearningAgent,

@@ -42,6 +42,7 @@ if __name__ == "__main__":
     (frameSizeX, frameSizeY) = WINDOW_SIZE_MAP[args.screen_size]
     readFromJson = args.json
     framerate = args.framerate
+    checkpoints = dict()
 
     if readFromJson:
         with open('testSettings.json', "r") as settingsf:
@@ -51,6 +52,10 @@ if __name__ == "__main__":
             verbose = settings['verbose']
             (frameSizeX, frameSizeY) = WINDOW_SIZE_MAP[settings['screenSize']]
             agents = [AGENT_MAP[agent] for agent in settings['agents']]
+            if 'exactq' in agents:
+                checkpoints['exactq'] = settings['exactq']
+            if 'approxq' in agents:
+                checkpoints['approxq'] = settings['approxq']
 
     avgGameLengths, avgGameScores = [], []
 
@@ -64,7 +69,10 @@ if __name__ == "__main__":
         screenNp, screenMat, screenNpStacked = None, None, None
         agent = agentType()
         if isinstance(agent, QLearningAgent):
-            agent.loadCheckpoint()
+            if agentType in checkpoints:
+                agent.loadCheckpoint(checkpoints[agentType])
+            else:
+                agent.loadCheckpoint()
             agent.stopTraining()
             
         for i in range(testRuns):
