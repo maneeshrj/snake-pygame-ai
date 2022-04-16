@@ -2,7 +2,7 @@ from Snake import Game, GameState
 import random
 from reflexAgent import ReflexAgent
 from randomAgent import RandomAgent
-from qLearningAgent import QLearningAgent
+from qLearningAgent import QLearningAgent, ApproxQAgent
 
 # from qLearningAgent import ApproxQAgent
 
@@ -12,6 +12,7 @@ AGENT_MAP = {
     'reflex': ReflexAgent,
     'random': RandomAgent,
     'exactq': QLearningAgent,
+    'approxq': ApproxQAgent
 }
 
 
@@ -23,6 +24,6 @@ def getAgentName(agent):
         return 'Reflex Agent'
     if agent == QLearningAgent:
         return 'Q-Learning Agent'
-    # if agent==approxQAgent:
-    #     return 'Approximate Q-Learning Agent'
+    if agent == ApproxQAgent:
+        return 'Approximate Q-Learning Agent'
     return 'unknown agent'

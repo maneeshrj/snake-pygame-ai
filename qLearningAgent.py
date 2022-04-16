@@ -15,7 +15,7 @@ class QLearningAgent:
         self.step = 0
 
     def __str__(self):
-        return "Q-Learning Agent"
+        return "QLearningAgent"
 
     def getQValue(self, state, action):
         """
@@ -171,25 +171,35 @@ class QLearningAgent:
 
 
 ### APPROX Q LEARNING FEATURE EXTRACTORS
-def getFeatures(state, action, extractor=0):
+def getFeatures(state, action, extractor=1):
     features = Counter()
     features["bias"] = 1.0
 
     # all features bases on next state
     curPos = state.getSnakePos()
     curHead = curPos[0]
-    nextPos = updatePosition(curHead, action)
+    nextHead = updatePosition(curHead, action)
     foodPos = state.getFoodPos()
     
     # get distance to food as a number between 0 and 1
-    features["foodDist"] = manhattanDistance(nextPos, foodPos) / ((state.frameX // 10) * (state.frameY // 10))
+    features["foodDist"] = manhattanDistance(nextHead, foodPos) / ((state.frameX // 10) * (state.frameY // 10))
 
-    # the snake looks in the direction of the action and has three features
-    # the min distance to an obstacle in the direction of the action
-    # the min distance to an obstacle to the left of the action
-    # the min distance to an obstacle to the right of the action
-    # an obstacle is the snakes body or the wall
-    # TODO: Implement this!
+    if extractor == 1:
+        nextX, nextY = nextHead[0]//10, nextHead[1]//10
+        matrix = state.getAsMatrix()
+        # print(headX, headY)
+        features["obstacleAhead"] = 1.
+        # the snake looks in the direction of the action and has three features
+        if nextX > 0 and nextX < matrix.shape[0]:
+            if nextY > 0 and nextY < matrix.shape[1]:
+                if matrix[nextX, nextY] <= 0:
+                    features["obstacleAhead"] = 0.
+                
+        # the min distance to an obstacle in the direction of the action
+        # the min distance to an obstacle to the left of the action
+        # the min distance to an obstacle to the right of the action
+        # an obstacle is the snakes body or the wall
+        # TODO: Implement this!
 
     features.divideAll(10.0)
     return features
@@ -200,7 +210,7 @@ class ApproxQAgent(QLearningAgent):
         self.weights = Counter()
     
     def __str__(self):
-        return 'Approx Q-Learning Agent'
+        return 'ApproxQAgent'
     
     def getWeights(self):
         return self.weights

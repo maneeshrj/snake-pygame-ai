@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # Add command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--agents", help="Agents to use", nargs='+', type=str,
-                        default=["random", "reflex", "exactq"], choices=["random", "reflex", "exactq"])
+                        default=["random", "reflex", "exactq", "approxq"], choices=["random", "reflex", "exactq", "approxq"])
     parser.add_argument("-n", "--num_runs", help="Number of runs", type=int, default=1)
     parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true", default=False)
     parser.add_argument("-g", "--graphics", help="Use graphics", action="store_true", default=False)
@@ -61,16 +61,18 @@ if __name__ == "__main__":
         print('Testing', getAgentName(agentType))
         gameLengths, gameScores = [], []
         startTime = time.time()
-        screenNp = None
+        screenNp, screenMat, screenNpStacked = None, None, None
         agent = agentType()
         if isinstance(agent, QLearningAgent):
-            agent.loadQValues()
-
+            agent.loadCheckpoint()
+            agent.stopTraining()
+            
         for i in range(testRuns):
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=frameSizeX,
                                   frameSizeY=frameSizeY)
-            env = Game(gameState, graphics=useGraphics, plain=plain, framerate=framerate)
+            env = Game(gameState, graphics=useGraphics, plain=plain, framerate=framerate, randomFood=True)
             env.setFoodPos()
+            
             agent.startEpisode(gameState)
             step = 0
             if verbose: print("Starting test " + str(i + 1) + ":")
@@ -90,6 +92,7 @@ if __name__ == "__main__":
                     if step == 1 or step == 2:
                         if screenNp is None:
                             screenNp = np.mean(env.getScreenAsNumpy(), axis=2)
+                            screenMat = env.gameState.getAsMatrix()
                         else:
                             screenNpStacked = np.dstack((screenNp, np.mean(env.getScreenAsNumpy(), axis=2)))
                 # print(is_over)
@@ -117,11 +120,13 @@ if __name__ == "__main__":
 
         agent.stopEpisode()
     print()
-
-    # matplotlib display image as greyscale
-    # print(screenNpStacked.shape)
-    # print('Shape', screen_np.shape, ' min/max', np.min(screen_np), ' / ', np.max(screen_np))
-    """fig, ax = plt.subplots(1,2)
-    ax[0].imshow(screen_np_stacked[...,0], cmap='gray')
-    ax[1].imshow(screen_np_stacked[...,1], cmap='gray')
-    plt.show()"""
+    
+    if useGraphics:
+        ##matplotlib display image as greyscale
+        print(screenNpStacked.shape)
+        # print('Shape', screen_np.shape, ' min/max', np.min(screen_np), ' / ', np.max(screen_np))
+        fig, ax = plt.subplots(1,2)
+        ax[0].imshow(screenNpStacked[...,0], cmap='gray')
+        ax[1].imshow(screenNpStacked[...,1], cmap='gray')
+        print(screenMat)
+        plt.show()

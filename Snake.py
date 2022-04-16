@@ -63,9 +63,9 @@ class GameState:
         return self.pos[0] == self.foodPos
 
     def isGameOver(self):
-        if self.pos[0][0] < 0 or self.pos[0][0] > self.frameX - 10:
+        if self.pos[0][0] < 0 or self.pos[0][0] > (self.frameX - 10):
             return True
-        if self.pos[0][1] < 0 or self.pos[0][1] > self.frameY - 10:
+        if self.pos[0][1] < 0 or self.pos[0][1] > (self.frameY - 10):
             return True
 
         for block in self.pos[1:]:
@@ -90,7 +90,7 @@ class GameState:
             # print('reward -1')
             return -5.0
         # print('no reward\n')
-        return 0.0
+        return -0.0001
 
     def __hash__(self):
         # TODO: Hash the attributes of the state for qlearning dictionary lookup
@@ -111,17 +111,19 @@ class GameState:
         """
         Returns the state as a matrix where the matrix is the frame size in 
         increments of 10 and the snake position is represented by 1's and the 
-        food position is represented by 2's
+        food position is represented by -1
         """
         matrix = np.zeros((self.frameX // 10, self.frameY // 10))
         for snakePos in self.pos:
             snakeX = snakePos[0] // 10
             snakeY = snakePos[1] // 10
             # print(snakeX, snakeY)
-            matrix[snakeX, snakeY] = 1
+            if snakeX > 0 and snakeX < matrix.shape[0]:
+                if snakeY > 0 and snakeY < matrix.shape[1]:
+                    matrix[snakeX, snakeY] = 1
         foodX = self.foodPos[0] // 10
         foodY = self.foodPos[1] // 10
-        matrix[foodX, foodY] = 2
+        matrix[foodX, foodY] = -1
         return matrix
     
 class Trial:
@@ -172,21 +174,6 @@ class Game:
         self.plain = plain
         self.foodPosList = foodPosList
 
-        # FIXME: Setting the random seed causes the snake to be deterministic which 
-        # prevents the snake from taking different path and learning the q table.
-        #random.seed(69)
-        # generate 100 random food positions as a generator to call next()
-        """for i in range((self.frameX // 10) ** 2):
-            self.foodPosList.append(
-                [random.randrange(1, (self.frameX // 10)) * 10, random.randrange(1, (self.frameY // 10)) * 10])"""
-        # loop through all positions in the frame in 10x10 increments
-
-        # if len(self.foodPosList) == 0:
-        #     for i in range((self.frameX//10)):
-        #         for j in range((self.frameY//10)):
-        #             self.foodPosList.append([i*10, j*10])
-        #     random.shuffle(self.foodPosList)
-        
         if randomFood:
             rng = np.random.RandomState()
             for i in range((self.frameX//10)):
