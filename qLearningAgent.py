@@ -1,7 +1,7 @@
-import random
+import sys, random
 import pickle
 from util import Counter, updatePosition, manhattanDistance
-import featureExtractors as feat
+# import featureExtractors as feat
 
 
 ### EXACT Q LEARNING AGENT
@@ -15,7 +15,7 @@ class QLearningAgent:
         self.step = 0
 
     def __str__(self):
-        return "QLearningAgent"
+        return "Q-Learning Agent"
 
     def getQValue(self, state, action):
         """
@@ -142,7 +142,7 @@ class QLearningAgent:
     def stopTraining(self):
         self.training = False
 
-    def loadQValues(self, fname='qvalues.pkl'):
+    def loadCheckpoint(self, fname='qvalues.pkl'):
         """
         Loads the q values into the agents qValues table from
         the given pickle file.
@@ -150,6 +150,16 @@ class QLearningAgent:
         with open(fname, 'rb') as f:
             d = pickle.load(f)
             self.qValues.loadDict(d)
+            
+    def saveCheckpoint(self, fname='qvalues.pkl'):
+        qValDict = self.qValues.asDict()
+        print('Q Value dictionary size:', sys.getsizeof(qValDict), 'bytes')
+        print('Number of Q-states explored:', len(qValDict))
+        with open(fname, 'wb') as f:
+            pickle.dump(qValDict, f, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(fname, 'rb') as f:
+            counts = pickle.load(f)
+            print('Length of qval dict saved:', len(counts))
     
     def startTraining(self, alpha=0.3, gamma=0.8, epsilon=0.8, numTraining=100):
         self.training = True
@@ -159,7 +169,9 @@ class QLearningAgent:
         self.initEpsilon = epsilon
         self.numTraining = numTraining
 
-def getFeatures(state, action):
+
+### APPROX Q LEARNING FEATURE EXTRACTORS
+def getFeatures(state, action, extractor=0):
     features = Counter()
     features["bias"] = 1.0
 
@@ -181,10 +193,14 @@ def getFeatures(state, action):
 
     features.divideAll(10.0)
     return features
+
 class ApproxQAgent(QLearningAgent):
     def __init__(self, **args):
         QLearningAgent.__init__(self, **args)
         self.weights = Counter()
+    
+    def __str__(self):
+        return 'Approx Q-Learning Agent'
     
     def getWeights(self):
         return self.weights
@@ -207,6 +223,27 @@ class ApproxQAgent(QLearningAgent):
         difference = ((reward) + (self.discount * self.getValue(nextState))) - (self.getQValue(state, action))
         for feature, value in getFeatures(state, action).items():
           self.weights[feature] = (self.weights[feature]) + (self.alpha * difference * value)
+    
+    def loadCheckpoint(self, fname='approxq_weights.pkl'):
+        """
+        Loads the weights into the agent's weights table from
+        the given pickle file.
+        """
+        with open(fname, 'rb') as f:
+            d = pickle.load(f)
+            self.weights.loadDict(d)
+            
+    def saveCheckpoint(self, fname='approxq_weights.pkl'):
+        weightsDict = self.weights.asDict()
+        # print('Weights dictionary size:', sys.getsizeof(weightsDict), 'bytes')
+        # print('Number of weights saved:', len(weightsDict))
+        with open(fname, 'wb') as f:
+            print('Saving weights: ', weightsDict)
+            pickle.dump(weightsDict, f, protocol=pickle.HIGHEST_PROTOCOL)
+        # with open(fname, 'rb') as f:
+        #     counts = pickle.load(f)
+        #     print('Length of qval dict saved:', len(counts))
+    
         
 ### APPROXIMATE Q-LEARNING AGENT
 # class ApproxQAgent: 
