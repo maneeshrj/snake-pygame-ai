@@ -158,13 +158,19 @@ class GameState:
             snakeX = snakePos[0] // 10
             snakeY = snakePos[1] // 10
             # print(snakeX, snakeY)
-            if snakeX > 0 and snakeX < matrix.shape[0]:
-                if snakeY > 0 and snakeY < matrix.shape[1]:
-                    matrix[snakeX, snakeY] = 1
+            if snakeX >= 0 and snakeX < matrix.shape[0]:
+                if snakeY >= 0 and snakeY < matrix.shape[1]:
+                    matrix[snakeY, snakeX] = 1
         foodX = self.foodPos[0] // 10
         foodY = self.foodPos[1] // 10
-        matrix[foodX, foodY] = -1
+        matrix[foodY, foodX] = -1
         return matrix
+    
+    def __str__(self):
+        """
+        Returns a string representation of the game state
+        """
+        return 'Snake: ' + str(self.pos) + '\nFood: ' + str(self.foodPos) + '\nDirection: ' + self.direction + '\nScore: ' + str(self.score)
     
 class Trial:
     """
@@ -202,6 +208,9 @@ class Trial:
 
 
 class Game:
+    '''
+    A Game defines the structure of a snake game.
+    '''
     def __init__(self, gameState=GameState(), graphics=False, framerate=10, plain=False, foodPosList=[], randomFood=False):
         self.graphics = graphics
         self.gameState = gameState
@@ -214,6 +223,7 @@ class Game:
         self.plain = plain
         self.foodPosList = foodPosList
 
+        # Generate a random food position from a set food list
         if randomFood:
             rng = np.random.RandomState()
             for i in range((self.frameX//10)):
@@ -260,7 +270,7 @@ class Game:
         self.gameState.foodSpawned = True
         # print(self.gameState.getAsMatrix())
         
-
+    # For an action the snake takes, update the game state
     def playStep(self, action):
         self.gameState.moveSnake(action)
         events = None
@@ -281,19 +291,16 @@ class Game:
 
         return self.gameState.isGameOver(), self.gameState.score
 
+    # Create the game window
     def drawWindow(self):
         self.game_window.fill(COLORS["black"])
-        # print("-" * 20)
         for pos in self.gameState.pos:
-            # Snake body
-            # .draw.rect(play_surface, color, xy-coordinate)
-            # xy-coordinate -> .Rect(x, y, size_x, size_y)
-            # print(pos)
             pygame.draw.rect(self.game_window, COLORS["green"], pygame.Rect(pos[0], pos[1], 10, 10))
 
-        # Snake food
+        # Draw snake food
         pygame.draw.rect(self.game_window, COLORS["white"], pygame.Rect(self.foodPos[0], self.foodPos[1], 10, 10))
 
+    # Display game over screen
     def gameOver(self):
         if (self.graphics):
             my_font = pygame.font.SysFont('times new roman', self.frameX // 5)
@@ -308,9 +315,8 @@ class Game:
 
             pygame.display.flip()
             pygame.quit()
-        # sys.exit()
 
-    # Score
+    # Show the score
     def showScore(self, choice, color, font, size):
         score_font = pygame.font.SysFont(font, size)
         score_surface = score_font.render(str(self.gameState.score), True, color)

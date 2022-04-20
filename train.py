@@ -1,9 +1,10 @@
 from Snake import Game, GameState, Trial
-from qLearningAgent import QLearningAgent, ApproxQAgent
+from qLearningAgent import QLearningAgent, ApproxQAgent, getFeatures
 import numpy as np
 import random
 import argparse, sys, time
 import json, pickle
+import time
 
 class Trainer:
     def __init__(self, agent, trainRandom=False, testRandom=False, saveFile='checkpoint.pkl'):
@@ -41,11 +42,22 @@ class Trainer:
 
             self.agent.startEpisode(gameState)
             gameOver = False
+            i = 0
+            # print("Start State:", game.gameState)
+            # print("Start Matrix:\n", game.gameState.getAsMatrix())
             while not gameOver:
+                
+                i += 1
+                # print("Determining Action...")
                 action = self.agent.getNextAction()
                 # reward = game.getReward(action)
                 # nextState = game.getNextState(action)
                 gameOver, score = game.playStep(action)
+                # if i == 1:
+                #     # print("Current State:", game.gameState)
+                #     # print(game.gameState.getAsMatrix())
+                #     while(True):
+                #         time.sleep(1000)
 
             game.gameOver()
             self.agent.stopEpisode()
@@ -82,7 +94,7 @@ class Trainer:
         for i in range(testRuns):
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT',
                                   frameSizeX=100, frameSizeY=100)
-            game = Game(gameState=gameState, graphics=graphics, plain=True,
+            game = Game(gameState=gameState, graphics=graphics, plain=True, framerate=10,
                         foodPosList=testingTrial.getFoodPosList(), randomFood=self.testRandom)
             testingTrial.setCurrentGame(game)
             game.setFoodPos()
@@ -92,6 +104,8 @@ class Trainer:
             while not gameOver:
                 step += 1
                 action = self.agent.getNextAction()
+                
+                # time.sleep(10000)
                 gameOver, score = game.playStep(action)
             gameLengths.append(step)
             gameScores.append(score)

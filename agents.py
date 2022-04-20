@@ -1,9 +1,11 @@
+# Imports
 from Snake import Game, GameState
 import random
 from reflexAgent import ReflexAgent
 from randomAgent import RandomAgent
 from qLearningAgent import QLearningAgent, ApproxQAgent
 
+# Defined Agents:
 AGENT_MAP = {
     'reflex': ReflexAgent,
     'random': RandomAgent,
@@ -11,8 +13,7 @@ AGENT_MAP = {
     'approxq': ApproxQAgent
 }
 
-
-### DEFINED AGENTS:
+# Return the name of the agent
 def getAgentName(agent):
     if agent == RandomAgent:
         return 'Random Agent'

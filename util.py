@@ -1,6 +1,7 @@
+# Imports
 from math import sqrt
 
-
+# Hard coded actions forr testing
 def generateFixedActions():
     actions = ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 
                'DOWN', 'DOWN', 'DOWN', 'DOWN', 
@@ -8,21 +9,21 @@ def generateFixedActions():
                'UP', 'UP', 'UP', 'UP']
     return actions
 
-
+# Distance formula
 def distance(a, b):
     return sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2)
 
-
+# Manhatten distance formula
 def manhattanDistance(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
-
+# Return the sign of a number
 def sign(x):
     if x >= 0:
         return 1
     return -1
 
-
+# Update position of the snake head based on a direction
 def updatePosition(pos, direction):
     newPos = [pos[0], pos[1]]
     if direction == 'UP':
@@ -35,9 +36,10 @@ def updatePosition(pos, direction):
         newPos = [pos[0] + 10, pos[1]]
     return newPos
 
-
 class Counter(dict):
     """
+    This Counter class was taken from Homework 3 of CS:4430
+
     A counter keeps track of counts for a set of keys.
 
     The counter class is an extension of the standard python

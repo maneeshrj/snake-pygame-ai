@@ -1,6 +1,7 @@
 import sys, random
 import pickle
 from util import Counter, updatePosition, manhattanDistance, distance
+import numpy as np
 # import featureExtractors as feat
 
 
@@ -55,6 +56,7 @@ class QLearningAgent:
             maxQ = float("-inf")
             bestActions = []
             for action in legalActions:
+                # print('Calling getQValue from computeActionFromQValues')
                 q = self.getQValue(state, action)
                 if q > maxQ:
                     maxQ = q
@@ -71,6 +73,7 @@ class QLearningAgent:
             are no legal actions, returns a value of 0.0.
         """
         legalActions = state.getValidActions()
+        
         if len(legalActions) == 0:
             return 0.0
         else:
@@ -91,6 +94,8 @@ class QLearningAgent:
         """
         state = self.gameState
         legalActions = state.getValidActions()
+        
+        # print('In getNextAction, LEGAL ACTIONS=',legalActions, 'w/ current direction=', state.direction)
         action = None
         if len(legalActions) == 0:
             return None
@@ -100,10 +105,10 @@ class QLearningAgent:
             else:
                 if random.random() < self.epsilon:
                     action = random.choice(legalActions)
-                    #print(f"Picking a random action {action}")
+                    # print(f"In getNextAction, picking a random action {action}")
                 else:
                     action = self.getPolicy(state)
-                    #print(f"Picking a policy action {action}")
+                    # print(f"In getNextAction, picking a policy action {action}")
         self.step += 1
         self.observeTransition(state, action, state.getSuccessor(action), state.getReward(action, self.step))
         return action
@@ -168,7 +173,7 @@ class QLearningAgent:
 
 
 ### APPROX Q LEARNING FEATURE EXTRACTORS
-def getFeatures(state, action, extractor=0):
+def getFeatures(state, action, extractor=1):
     features = Counter()
     features["bias"] = 1.0
 
@@ -181,28 +186,136 @@ def getFeatures(state, action, extractor=0):
     # get distance to food as a number between 0 and 1
     nextFoodDist = distance(nextHead, foodPos) / ((state.frameX // 10) * (state.frameY // 10))
     currFoodDist = distance(curHead, foodPos) / ((state.frameX // 10) * (state.frameY // 10))
-    features['foodDist'] = nextFoodDist - currFoodDist
+    # features['foodDist'] = nextFoodDist - currFoodDist
+    features['foodDist'] = nextFoodDist
 
     if extractor == 1:
+        # Get the next state as a matrix
+        nextState = state.getSuccessor(action)
+        nextMat = nextState.getAsMatrix()
         nextX, nextY = nextHead[0]//10, nextHead[1]//10
-        matrix = state.getAsMatrix()
-        # print(headX, headY)
-        # the snake looks in the direction of the action 
-        nextDirection = action
-        if action == 'CONTINUE':
-            nextDirection = state.direction
+        direction =  nextState.direction
+
+        # If the snakes head is out of bounds of the frame then set distToObstacleAhead to 0
+        if (nextX < 0 or nextX >= nextMat.shape[1]) or (nextY < 0 or nextY >= nextMat.shape[0]):
+            features["distToObstacleAhead"] = 0.
+            features["distToObstacleLeft"] = 0.
+            features["distToObstacleRight"] = 0.
+        elif direction == "RIGHT":
+            # Look Ahead (East)
+            features["distToObstacleAhead"] = nextMat.shape[1] - nextX
+            # Check all of the matrix positions that share the same row as the snake head
+            for i in range(nextX + 1, nextMat.shape[1]):
+                if nextMat[nextY, i] == 1:
+                    features["distToObstacleAhead"] = i - nextX
+            features["distToObstacleAhead"] /= nextMat.shape[1]
+
+            # Look Left (North)
+            features["distToObstacleLeft"] = nextY
+            for j in range(nextY - 1, -1, -1):
+                if nextMat[j, nextX] == 1:
+                    features["distToObstacleLeft"] = nextY - j
+            features["distToObstacleLeft"] /= nextMat.shape[0]
+
+            # Look Right (South)
+            features["distToObstacleRight"] = nextMat.shape[0] - nextY
+            for k in range(nextY + 1, nextMat.shape[0]):
+                if nextMat[k, nextX] == 1:
+                    features["distToObstacleRight"] = k - nextY
+            features["distToObstacleRight"] /= nextMat.shape[0]
             
-        if nextX < 0: features["outOfBoundsL"] = 10.
-        else: features["outOfBoundsL"] = 0.
+        elif direction == "DOWN":
+            # Look Ahead (South)
+            features["distToObstacleAhead"] = nextMat.shape[0] - nextY
+            # Check all of the matrix positions that share the same column as the snake head
+            for i in range(nextY + 1, nextMat.shape[0]):
+                if nextMat[i, nextX] == 1:
+                    features["distToObstacleAhead"] = i - nextY
+            features["distToObstacleAhead"] /= nextMat.shape[0]
+
+            # Look Left (East)
+            features["distToObstacleLeft"] = nextMat.shape[1] - nextX
+            for j in range(nextX + 1, nextMat.shape[1]):
+                if nextMat[nextY, j] == 1:
+                    features["distToObstacleLeft"] = j - nextX
+            features["distToObstacleLeft"] /= nextMat.shape[1]
+
+            # Look Right (West)
+            features["distToObstacleRight"] = nextX + 1
+            for k in range(nextX - 1, -1, -1):
+                if nextMat[nextY, k] == 1:
+                    features["distToObstacleRight"] = nextX - k
+            features["distToObstacleRight"] /= nextMat.shape[1]
+
+        elif direction == "LEFT":
+            features["distToObstacleAhead"] = nextX + 1
+            # Check all of the matrix positions that share the same row as the snake head
+            for i in range(nextX - 1, -1, -1):
+                if nextMat[nextY, i] == 1:
+                    features["distToObstacleAhead"] = nextX - i
+            features["distToObstacleAhead"] /= nextMat.shape[1]
+
+            # Look Left (South)
+            features["distToObstacleLeft"] = nextMat.shape[0] - nextY
+            for j in range(nextY + 1, nextMat.shape[0]):
+                if nextMat[j, nextX] == 1:
+                    features["distToObstacleLeft"] = j - nextY
+            features["distToObstacleLeft"] /= nextMat.shape[0]
+
+            # Look Right (North)
+            features["distToObstacleRight"] = nextY + 1
+            for k in range(nextY - 1, -1, -1):
+                if nextMat[k, nextX] == 1:
+                    features["distToObstacleRight"] = nextY - k
+            features["distToObstacleRight"] /= nextMat.shape[0]
+
+        elif direction == "UP":
+            features["distToObstacleAhead"] = nextY + 1
+            # Check all of the matrix positions that share the same column as the snake head
+            for i in range(nextY - 1, -1, -1):
+                if nextMat[i, nextX] == 1:
+                    features["distToObstacleAhead"] = nextY - i
+            features["distToObstacleAhead"] /= nextMat.shape[0]
+            
+            # Look Left (West)
+            features["distToObstacleLeft"] = nextX + 1
+            for j in range(nextX - 1, -1, -1):
+                if nextMat[nextY, j] == 1:
+                    features["distToObstacleLeft"] = nextX - j
+            features["distToObstacleLeft"] /= nextMat.shape[1]
+
+            # Look Right (East)
+            features["distToObstacleRight"] = nextMat.shape[1] - nextX
+            for k in range(nextX + 1, nextMat.shape[1]):
+                if nextMat[nextY, k] == 1:
+                    features["distToObstacleRight"] = k - nextX
+            features["distToObstacleRight"] /= nextMat.shape[1]
         
-        if nextY < 0: features["outOfBoundsU"] = 10.
-        else: features["outOfBoundsU"] = 0.
+        # print("*" * 40)
+        # print('Trying action', action)
+        # print("NEXT MATRIX:\n", nextMat)
+        # print("NEXT STATE: ", nextState)
+        # print("*" * 40)
+
+        # 
+        # matrix = state.getAsMatrix()
+        # # print(headX, headY)
+        # # the snake looks in the direction of the action 
+        # nextDirection = action
+        # if action == 'CONTINUE':
+        #     nextDirection = state.direction
+            
+        # if nextX < 0: features["outOfBoundsL"] = 1.
+        # else: features["outOfBoundsL"] = 0.
         
-        if nextX >= matrix.shape[0]: features["outOfBoundsR"] = 10.
-        else: features["outOfBoundsR"] = 0.
+        # if nextY < 0: features["outOfBoundsU"] = 1.
+        # else: features["outOfBoundsU"] = 0.
         
-        if nextY >= matrix.shape[1]: features["outOfBoundsD"] = 10.
-        else: features["outOfBoundsD"] = 0.
+        # if nextX >= matrix.shape[0]: features["outOfBoundsR"] = 1.
+        # else: features["outOfBoundsR"] = 0.
+        
+        # if nextY >= matrix.shape[1]: features["outOfBoundsD"] = 1.
+        # else: features["outOfBoundsD"] = 0.
 
         # the min distance to an obstacle in the direction of the action
         # the min distance to an obstacle to the left of the action
@@ -231,6 +344,7 @@ class ApproxQAgent(QLearningAgent):
         """
         # Given a state, action pair, return the Q value
         # Use the weights to compute the Q value
+        # print("Calling getQValue on", state,'+',action)
         features = getFeatures(state, action)
         q_value = 0
         for feature in features:
@@ -240,6 +354,7 @@ class ApproxQAgent(QLearningAgent):
     
     def update(self, state, action, nextState, reward):
         difference = ((reward) + (self.discount * self.getValue(nextState))) - (self.getQValue(state, action))
+        # print("Called Inside Update for", state, '+', action)
         for feature, value in getFeatures(state, action).items():
           self.weights[feature] = (self.weights[feature]) + (self.alpha * difference * value)
     

@@ -1,10 +1,10 @@
-from util import updatePosition, distance, manhattanDistance
+# Imports
+from util import updatePosition, distance
 
-
-# REFLEX AGENT
-# At each time step, takes the action that most decreases the distance
-# between the head of the snake and the food.
 class ReflexAgent:
+    '''
+    A Reflex agent chooses the action that minimizes manhatten distance to the food. 
+    '''
     def __init__(self):
         self.accumulatedRewards = 0
         self.gameState = None
@@ -19,11 +19,10 @@ class ReflexAgent:
         self.accumulatedRewards += self.gameState.score
         self.gameState = None
 
+    # Find the action that minimizes manhatten distance to the food
     def getNextAction(self):
         validActions = self.gameState.getValidActions()
-        currentPos = self.gameState.pos
         foodPos = self.gameState.foodPos
-        newPos = None
         bestDist, bestAction = float('inf'), None
 
         for action in validActions:

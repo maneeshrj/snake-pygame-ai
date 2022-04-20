@@ -1,9 +1,10 @@
+# Imports
 import random
 
-
-# RANDOM AGENT
-# At each time step, randomly picks an action from the valid choices.
 class RandomAgent:
+    '''
+    A Random agent picks a random action at each step
+    '''
     def __init__(self):
         self.accumulatedRewards = 0
         self.gameState = None
@@ -18,6 +19,7 @@ class RandomAgent:
         self.accumulatedRewards += self.gameState.score
         self.gameState = None
 
+    # Choose a random action out of the valid action set
     def getNextAction(self):
         validActions = self.gameState.getValidActions()
         return random.choice(validActions)
