@@ -1,6 +1,6 @@
 import sys, random
 import pickle
-from util import Counter, updatePosition, manhattanDistance
+from util import Counter, updatePosition, manhattanDistance, distance
 # import featureExtractors as feat
 
 
@@ -46,9 +46,7 @@ class QLearningAgent:
 
     def computeActionFromQValues(self, state):
         """
-            Compute the best action to take in a state.  Note that if there
-            are no legal actions, which is the case at the terminal state,
-            you should return None.
+            Compute the best action to take in a state.
         """
         legalActions = state.getValidActions()
         if len(legalActions) == 0:
@@ -69,9 +67,8 @@ class QLearningAgent:
 
     def computeValueFromQValues(self, state):
         """
-            Compute the best value to take for a state.  Note that if there
-            are no legal actions, which is the case at the terminal state,
-            you should return a value of 0.0.
+            Compute the best value to take for a state. If there
+            are no legal actions, returns a value of 0.0.
         """
         legalActions = state.getValidActions()
         if len(legalActions) == 0:
@@ -171,7 +168,7 @@ class QLearningAgent:
 
 
 ### APPROX Q LEARNING FEATURE EXTRACTORS
-def getFeatures(state, action, extractor=1):
+def getFeatures(state, action, extractor=0):
     features = Counter()
     features["bias"] = 1.0
 
@@ -182,38 +179,30 @@ def getFeatures(state, action, extractor=1):
     foodPos = state.getFoodPos()
     
     # get distance to food as a number between 0 and 1
-    features["foodDist"] = manhattanDistance(nextHead, foodPos) / ((state.frameX // 10) * (state.frameY // 10))
+    nextFoodDist = distance(nextHead, foodPos) / ((state.frameX // 10) * (state.frameY // 10))
+    currFoodDist = distance(curHead, foodPos) / ((state.frameX // 10) * (state.frameY // 10))
+    features['foodDist'] = nextFoodDist - currFoodDist
 
     if extractor == 1:
         nextX, nextY = nextHead[0]//10, nextHead[1]//10
         matrix = state.getAsMatrix()
         # print(headX, headY)
-        features["obstacleAhead"] = 0.
-        # the snake looks in the direction of the action and has three features  
-        if nextX > 0 and nextX < matrix.shape[0]:
-            if nextY > 0 and nextY < matrix.shape[1]:
-                if action == 'RIGHT':
-                    for i in range(nextX, matrix.shape[0]):
-                        features['obstacleAhead'] = i
-                        if matrix[i,nextY] == 1:
-                            break
-                if action == 'LEFT':
-                    for i in range(nextX, -1, -1):
-                        features['obstacleAhead'] = i
-                        if matrix[i,nextY] == 1:
-                            break
-                if action == 'DOWN':
-                    for i in range(nextY, matrix.shape[1]):
-                        features['obstacleAhead'] = i
-                        if matrix[nextX,i] == 1:
-                            break
-                if action == 'UP':
-                    for i in range(nextY, -1, -1):
-                        features['obstacleAhead'] = i
-                        if matrix[nextX,i] == 1:
-                            break                
-                      
-        features["obstacleAhead"] = features["obstacleAhead"] / (state.frameX // 10)
+        # the snake looks in the direction of the action 
+        nextDirection = action
+        if action == 'CONTINUE':
+            nextDirection = state.direction
+            
+        if nextX < 0: features["outOfBoundsL"] = 10.
+        else: features["outOfBoundsL"] = 0.
+        
+        if nextY < 0: features["outOfBoundsU"] = 10.
+        else: features["outOfBoundsU"] = 0.
+        
+        if nextX >= matrix.shape[0]: features["outOfBoundsR"] = 10.
+        else: features["outOfBoundsR"] = 0.
+        
+        if nextY >= matrix.shape[1]: features["outOfBoundsD"] = 10.
+        else: features["outOfBoundsD"] = 0.
 
         # the min distance to an obstacle in the direction of the action
         # the min distance to an obstacle to the left of the action
@@ -273,107 +262,3 @@ class ApproxQAgent(QLearningAgent):
         # with open(fname, 'rb') as f:
         #     counts = pickle.load(f)
         #     print('Length of qval dict saved:', len(counts))
-    
-        
-### APPROXIMATE Q-LEARNING AGENT
-# class ApproxQAgent: 
-#     def __init__(self, epsilon=1.0, gamma=0.99, alpha=0.25):
-#         self.gameState = None
-#         self.env = None
-#         self.weights = Counter()
-#         self.featExtractor = feat.SimpleExtractor()
-#         self.epsilon = epsilon
-#         self.discount = gamma
-#         self.alpha = alpha
-#         self.training = True
-#         self.episodesSoFar = 0
-#         self.accumTrainRewards = 0.0
-#         self.accumTestRewards = 0.0
-
-#     def __str__(self):
-#         return "ApproxQAgent"
-
-#     def getWeights(self):
-#         return self.weights
-
-#     def setWeights(self, weights):
-#         self.weights = weights
-
-#     def isInTraining(self):
-#         return self.training
-
-#     def stopTraining(self):
-#         self.training = False
-
-#     def getNextAction(self):
-#         if(self.env == None): return None
-#         validActions = self.gameState.getValidActions()
-#         action = None
-#         r = random.random()
-#         if (r < self.epsilon) and self.isInTraining():
-#             action = random.choice(validActions)
-#         else:
-#             action = self.computeActionFromQValues(self.env.getCurrentState())
-
-#         self.observeTransition(action)
-#         return action
-
-#     def computeActionFromQValues(self, state):
-#         bestValue, bestAction = float("-inf"), None
-#         print('\nPicking from options:')
-#         for action in state.getValidActions():
-#             qVal = self.getQValue(state, action)
-#             if qVal > bestValue:
-#                 bestValue, bestAction = qVal, action
-#         print('Picked', bestAction)
-#         return bestAction
-
-#     def startEpisode(self, gameState, env):
-#         self.episodeRewards = 0.0
-#         self.gameState = gameState
-#         self.env = env
-
-#     def stopEpisode(self):
-#         if self.training:
-#             self.accumTrainRewards += self.episodeRewards
-#         else:
-#             self.accumTestRewards += self.episodeRewards
-#             self.epsilon = 0.0    # no exploration
-#             self.alpha = 0.0      # no learning
-#         self.episodesSoFar += 1
-#         self.gameState = None
-#         self.env = None
-
-#     def computeValueFromQValues(self, state):
-#         # if len(self.getValidActions(state)) == 0:
-#         #     return 0.0
-#         bestValue = float("-inf")
-#         for action in state.getValidActions():
-#             qVal = self.getQValue(state, action)
-#             if qVal > bestValue:
-#                 bestValue = qVal
-#         return bestValue
-
-#     def getValue(self, state):
-#         return self.computeValueFromQValues(state)
-
-#     # Implement approximative Q-learning
-#     def getQValue(self, state, action):
-#         feats = self.featExtractor.getFeatures(state, action)
-#         q = self.weights * feats # dot product of W and features, weighted linear function
-#         if not self.training:
-#             print('Action:', action, ', q:', q)
-#         return q
-
-#     def observeTransition(self, action):
-#         reward = self.env.getRewardAlive(action)
-#         self.episodeRewards += reward
-#         if self.training:
-#            self.update(self.env.getCurrentState(), action, self.env.getNextState(action), reward)
-
-#     def update(self, state, action, nextState, reward):
-#         feats = self.featExtractor.getFeatures(state, action)
-#         diff = (reward + self.discount*self.getValue(nextState)) - self.getQValue(state,action)
-#         for i in feats:
-#             self.weights[i] += (self.alpha*diff)*feats[i]
-#             #print('weights',self.weights)

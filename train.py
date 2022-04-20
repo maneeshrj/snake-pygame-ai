@@ -57,6 +57,7 @@ class Trainer:
                     print('Accumulated rewards at 25% training interval:', self.totalTrainRewards)
                     self.totalTrainRewards = self.agent.accumTrainRewards
                 if saveWeights:
+                    print('Saving checkpoint to', self.saveFile)
                     self.agent.saveCheckpoint(self.saveFile)
         
         self.agent.stopTraining()
@@ -131,7 +132,7 @@ if __name__ == "__main__":
         saveFilename = 'qvalues.pkl'
     elif agentType == "approxq":
         agent = ApproxQAgent()
-        saveFilename = 'approxq_weights.pkl'
+        saveFilename = 'approxq_weights_2.pkl'
     
     if loadQValues:
         agent.loadCheckpoint(saveFilename)

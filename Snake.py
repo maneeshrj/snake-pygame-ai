@@ -1,6 +1,7 @@
 import pygame, sys, time, random, copy, util
 import numpy as np
 
+# Defalut colors for graphics
 COLORS = {
     "black": pygame.Color(0, 0, 0),
     "white": pygame.Color(255, 255, 255),
@@ -8,11 +9,15 @@ COLORS = {
     "green": pygame.Color(0, 255, 0),
 }
 
-
 class GameState:
+    """
+    A GameState contains all the information necessary to define
+    a unique state of the game.
+    """
+    
     def __init__(self, pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', score=0, foodPos=[0, 0], frameSizeX=100,
                  frameSizeY=100):
-        # Head of the snake is the first element of the list
+        # NOTE: Head of the snake is the first element of the list
         self.pos = pos
         self.direction = direction
         self.foodPos = foodPos
@@ -22,6 +27,9 @@ class GameState:
         self.timeout = False
 
     def getValidActions(self):
+        """
+        Calculates valid actions give the current direction
+        """
         # Gets the valid actions for the snake
         if self.direction == 'UP' or self.direction == 'DOWN':
             return ['LEFT', 'RIGHT', 'CONTINUE']
@@ -30,6 +38,9 @@ class GameState:
         return ['CONTINUE']
 
     def moveSnake(self, direction):
+        """
+        Given a direction, updates the position of the snake
+        """
         self.pos.insert(0, list(self.pos[0]))  # duplicate head
 
         if direction != 'CONTINUE':
@@ -51,18 +62,33 @@ class GameState:
             self.foodSpawned = True
 
     def getSnakePos(self):
+        """
+        Returns list of positions of the snake body, ordered from head to tail
+        """
         return self.pos
 
     def getSnakeDir(self):
+        """
+        Returns current snake direction
+        """
         return self.direction
 
     def getFoodPos(self):
+        """
+        Returns current food location
+        """
         return self.foodPos
 
     def reachedFood(self):
+        """
+        Checks if snake head is in the same position as food
+        """
         return self.pos[0] == self.foodPos
 
     def isGameOver(self):
+        """
+        Returns true if this game state is game over, false otherwise
+        """
         if self.pos[0][0] < 0 or self.pos[0][0] > (self.frameX - 10):
             return True
         if self.pos[0][1] < 0 or self.pos[0][1] > (self.frameY - 10):
@@ -74,11 +100,17 @@ class GameState:
         return self.timeout
 
     def getSuccessor(self, action):
+        """
+        Returns the next state given this current state and a possible action
+        """
         nextState = copy.deepcopy(self)
         nextState.moveSnake(action)
         return nextState
 
     def getReward(self, action, step=0):
+        """
+        Returns a numerical reward for taking an action from the current state
+        """
         if step == 10000:
             self.timeout = True
             return -10.0
@@ -93,12 +125,20 @@ class GameState:
         return -0.0001
 
     def __hash__(self):
+        """
+        Returns a hash of the game state object.
+        Uses only snake position, food position, and direction for hashing.
+        """
         # TODO: Hash the attributes of the state for qlearning dictionary lookup
         tup = (str(self.pos), tuple(self.foodPos), self.direction)
         # print(tup)
         return hash(tup)
 
     def __eq__(self, other):
+        """
+        Checks for equality between two game states.
+        Compares only snake position, food position, and direction.
+        """
         if isinstance(other, self.__class__):
             return (self.pos == other.pos) and (self.foodPos == other.foodPos) and (self.direction == other.direction)
         else:
@@ -109,9 +149,9 @@ class GameState:
     
     def getAsMatrix(self):
         """
-        Returns the state as a matrix where the matrix is the frame size in 
-        increments of 10 and the snake position is represented by 1's and the 
-        food position is represented by -1
+        Returns the state as a matrix where the matrix represents the window
+        frame. The snake position is represented by 1's, empty spaces are 0s,
+        and food position is represented by -1.
         """
         matrix = np.zeros((self.frameX // 10, self.frameY // 10))
         for snakePos in self.pos:
