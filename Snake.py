@@ -111,18 +111,18 @@ class GameState:
         """
         Returns a numerical reward for taking an action from the current state
         """
-        if step == 10000:
+        """if step == 10000:
             self.timeout = True
-            return -10.0
+            return -10.0"""
         nextState = self.getSuccessor(action)
         if (nextState.reachedFood()):
             # print('reward 1')
             return 10.0
         if (nextState.isGameOver()):
             # print('reward -1')
-            return -5.0
+            return -100
         # print('no reward\n')
-        return -0.0001
+        return 1
 
     def __hash__(self):
         """
@@ -170,7 +170,7 @@ class GameState:
         """
         Returns a string representation of the game state
         """
-        return 'Snake: ' + str(self.pos) + '\nFood: ' + str(self.foodPos) + '\nDirection: ' + self.direction + '\nScore: ' + str(self.score)
+        return '{Snake: ' + str(self.pos) + '\nFood: ' + str(self.foodPos) + '\nDirection: ' + self.direction + '\nScore: ' + str(self.score) + '}'
     
 class Trial:
     """
