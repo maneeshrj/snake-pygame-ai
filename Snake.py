@@ -37,14 +37,20 @@ class GameState:
             return ['UP', 'DOWN', 'CONTINUE']
         return ['CONTINUE']
 
-    def moveSnake(self, direction):
+    def isValidAction(self, action):
+        return (action in self.getValidActions())
+
+    def moveSnake(self, action):
         """
         Given a direction, updates the position of the snake
         """
         self.pos.insert(0, list(self.pos[0]))  # duplicate head
 
-        if direction != 'CONTINUE':
-            self.direction = direction
+        # NOTE: If the action is valid, snake's current direction will be updated
+        # If the action is invalid, snake's direction will remain the same as the
+        # last timestep (i.e. the action will default to CONTINUE)
+        if (action != 'CONTINUE') and (self.isValidAction(action)):
+            self.direction = action
         if self.direction == 'UP':
             self.pos[0][1] -= 10
         if self.direction == 'DOWN':

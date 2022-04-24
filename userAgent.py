@@ -24,7 +24,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-s", "--screen_size", help="Size of the window", type=str, default="small",
                         choices=["small", "medium", "large"])
 parser.add_argument("-f", "--framerate", help="Set game speed", type=int, default=7)
-parser.add_argument("-r", "--reset", help="Reset game log", type=bool, default=False)
+parser.add_argument("-r", "--reset", help="Reset game log", action="store_true", default=False)
 
 # Set argument values
 args = parser.parse_args()
