@@ -195,101 +195,14 @@ def getFeatures(state, action, extractor=1):
         nextMat = nextState.getAsMatrix()
         nextX, nextY = nextHead[0]//10, nextHead[1]//10
         direction =  nextState.direction
-
-        # If the snakes head is out of bounds of the frame then set distToObstacleAhead to 0
-        if (nextX < 0 or nextX >= nextMat.shape[1]) or (nextY < 0 or nextY >= nextMat.shape[0]):
-            features["distToObstacleAhead"] = 0.
-            features["distToObstacleLeft"] = 0.
-            features["distToObstacleRight"] = 0.
-        elif direction == "RIGHT":
-            # Look Ahead (East)
-            features["distToObstacleAhead"] = nextMat.shape[1] - nextX
-            # Check all of the matrix positions that share the same row as the snake head
-            for i in range(nextX + 1, nextMat.shape[1]):
-                if nextMat[nextY, i] == 1:
-                    features["distToObstacleAhead"] = i - nextX
-            features["distToObstacleAhead"] /= nextMat.shape[1]
-
-            # Look Left (North)
-            features["distToObstacleLeft"] = nextY
-            for j in range(nextY - 1, -1, -1):
-                if nextMat[j, nextX] == 1:
-                    features["distToObstacleLeft"] = nextY - j
-            features["distToObstacleLeft"] /= nextMat.shape[0]
-
-            # Look Right (South)
-            features["distToObstacleRight"] = nextMat.shape[0] - nextY
-            for k in range(nextY + 1, nextMat.shape[0]):
-                if nextMat[k, nextX] == 1:
-                    features["distToObstacleRight"] = k - nextY
-            features["distToObstacleRight"] /= nextMat.shape[0]
-            
-        elif direction == "DOWN":
-            # Look Ahead (South)
-            features["distToObstacleAhead"] = nextMat.shape[0] - nextY
-            # Check all of the matrix positions that share the same column as the snake head
-            for i in range(nextY + 1, nextMat.shape[0]):
-                if nextMat[i, nextX] == 1:
-                    features["distToObstacleAhead"] = i - nextY
-            features["distToObstacleAhead"] /= nextMat.shape[0]
-
-            # Look Left (East)
-            features["distToObstacleLeft"] = nextMat.shape[1] - nextX
-            for j in range(nextX + 1, nextMat.shape[1]):
-                if nextMat[nextY, j] == 1:
-                    features["distToObstacleLeft"] = j - nextX
-            features["distToObstacleLeft"] /= nextMat.shape[1]
-
-            # Look Right (West)
-            features["distToObstacleRight"] = nextX + 1
-            for k in range(nextX - 1, -1, -1):
-                if nextMat[nextY, k] == 1:
-                    features["distToObstacleRight"] = nextX - k
-            features["distToObstacleRight"] /= nextMat.shape[1]
-
-        elif direction == "LEFT":
-            features["distToObstacleAhead"] = nextX + 1
-            # Check all of the matrix positions that share the same row as the snake head
-            for i in range(nextX - 1, -1, -1):
-                if nextMat[nextY, i] == 1:
-                    features["distToObstacleAhead"] = nextX - i
-            features["distToObstacleAhead"] /= nextMat.shape[1]
-
-            # Look Left (South)
-            features["distToObstacleLeft"] = nextMat.shape[0] - nextY
-            for j in range(nextY + 1, nextMat.shape[0]):
-                if nextMat[j, nextX] == 1:
-                    features["distToObstacleLeft"] = j - nextY
-            features["distToObstacleLeft"] /= nextMat.shape[0]
-
-            # Look Right (North)
-            features["distToObstacleRight"] = nextY + 1
-            for k in range(nextY - 1, -1, -1):
-                if nextMat[k, nextX] == 1:
-                    features["distToObstacleRight"] = nextY - k
-            features["distToObstacleRight"] /= nextMat.shape[0]
-
-        elif direction == "UP":
-            features["distToObstacleAhead"] = nextY + 1
-            # Check all of the matrix positions that share the same column as the snake head
-            for i in range(nextY - 1, -1, -1):
-                if nextMat[i, nextX] == 1:
-                    features["distToObstacleAhead"] = nextY - i
-            features["distToObstacleAhead"] /= nextMat.shape[0]
-            
-            # Look Left (West)
-            features["distToObstacleLeft"] = nextX + 1
-            for j in range(nextX - 1, -1, -1):
-                if nextMat[nextY, j] == 1:
-                    features["distToObstacleLeft"] = nextX - j
-            features["distToObstacleLeft"] /= nextMat.shape[1]
-
-            # Look Right (East)
-            features["distToObstacleRight"] = nextMat.shape[1] - nextX
-            for k in range(nextX + 1, nextMat.shape[1]):
-                if nextMat[nextY, k] == 1:
-                    features["distToObstacleRight"] = k - nextX
-            features["distToObstacleRight"] /= nextMat.shape[1]
+        
+        minDistToBody = float("inf")
+        for bodyElem in curPos[1:]:
+            distToBody = distance(nextHead, bodyElem)
+            if distToBody < minDistToBody:
+                minDistToBody = distToBody
+        
+        features['minDistToBody'] = (minDistToBody / ((state.frameX // 10) * (state.frameY // 10)))
         
         # print("*" * 40)
         # print('Trying action', action)

@@ -66,16 +66,16 @@ class DQN(nn.Module):
             x = F.relu(self.conv1(x))
             # print('2',x.shape)
             x = F.relu(self.conv2(x))
-            print('3',x.shape)
+            # print('3',x.shape)
             x = F.relu(self.conv3(x))
-            print('4',x.shape)
+            # print('4',x.shape)
             x = x.view(x.size(0), -1)
-            print('5',x.shape)
+            # print('5',x.shape)
             x = F.relu(self.fc1(x.view(x.size(0), -1)))
-            print('6',x.shape)
+            # print('6',x.shape)
             x = self.fc2(x)
-            print('7',x.shape)
-            print()
+            # print('7',x.shape)
+            # print()
             return x
 
 #%% Training Setup
@@ -112,10 +112,10 @@ def select_action(state):
             # t.max(1) will return largest column value of each row.
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
-            a = policy_net(state).max(1)[0].view(1, 1)
+            a = policy_net(state).max(dim=1)[1].view(1, 1)
             # print(a.shape)
             a = a.type(torch.LongTensor)
-            print(a)
+            # print(a)
             return a
     else:
         return torch.tensor([[random.randrange(n_actions)]], device=device, dtype=torch.long)
@@ -205,7 +205,7 @@ def optimize_model():
 
 learningTrial = Trial()
 
-num_episodes = 50
+num_episodes = 20
 for ep in range(num_episodes):
     print('Epoch', ep)
     if (ep == 18):
@@ -257,7 +257,7 @@ for ep in range(num_episodes):
     if ep % TARGET_UPDATE == 0:
         target_net.load_state_dict(policy_net.state_dict())
 
-print(episode_durations)
+print('Episode durations:',episode_durations)
 print('Complete')
 # plt.ioff()
 plt.show()
