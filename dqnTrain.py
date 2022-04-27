@@ -205,7 +205,7 @@ def optimize_model():
 
 learningTrial = Trial()
 
-num_episodes = 20
+num_episodes = 3
 for ep in range(num_episodes):
     print('Epoch', ep)
     if (ep == 18):

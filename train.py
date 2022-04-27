@@ -92,6 +92,8 @@ class Trainer:
         self.testingTrial = testingTrial
 
         for i in range(testRuns):
+            if i % (testRuns // 5) == 0:
+                print(f"\nFinished test {i} of {testRuns}.")
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT',
                                   frameSizeX=100, frameSizeY=100)
             game = Game(gameState=gameState, graphics=graphics, plain=True, framerate=10,
@@ -125,6 +127,7 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--agent", help="Agent to use", type=str, default="q", choices=["q", "approxq"])
     parser.add_argument("-n", "--num_episodes", help="Number of training episodes", type=int, default=4000)
     parser.add_argument("-t", "--test_runs", help="Number of test runs", type=int, default=10)
+    parser.add_argument("-g", "--graphics", help="Use graphics", action="store_true", default=False)
     parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true")
     parser.add_argument("-l", "--load", help="Load qvalues from pickle file", action="store_true")
     parser.add_argument("-s", "--save_weights", help="Save trained weights", action="store_true")
@@ -139,6 +142,7 @@ if __name__ == "__main__":
     saveWeights= args.save_weights
     testRandom = args.test_random
     trainRandom = True
+    graphics = args.graphics
 
     if agentType == "q":
         agent = QLearningAgent()
@@ -156,7 +160,7 @@ if __name__ == "__main__":
             
     trainer = Trainer(agent, trainRandom=trainRandom, testRandom=testRandom, saveFile=saveFilename)
     trainer.train(trainingEpisodes=numEpisodes, verbose=verbose, saveWeights=saveWeights)
-    trainer.test(testRuns=testRuns, graphics=True, verbose=verbose)
+    trainer.test(testRuns=testRuns, graphics=graphics, verbose=verbose)
     
     if agentType == 'approxq':
         print('\nFinal weights: ', agent.weights)
