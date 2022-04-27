@@ -58,10 +58,7 @@ if __name__ == "__main__":
             verbose = settings['verbose']
             (frameSizeX, frameSizeY) = WINDOW_SIZE_MAP[settings['screenSize']]
             agents = [AGENT_MAP[agent] for agent in settings['agents']]
-            if 'exactq' in agents:
-                checkpoints['exactq'] = settings['exactq']
-            if 'approxq' in agents:
-                checkpoints['approxq'] = settings['approxq']
+            checkpoints = settings['checkpoints']
 
     avgGameLengths, avgGameScores = [], []
 
@@ -84,7 +81,7 @@ if __name__ == "__main__":
                 agent.loadCheckpoint(checkpoints[agentType])
             else:
                 agent.loadCheckpoint()
-            agent.stopTraining()
+            agent.stopTraining()  # unnecessary, just to be safe
         
         for i in range(testRuns):
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=frameSizeX,

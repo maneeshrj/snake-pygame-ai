@@ -123,12 +123,12 @@ class GameState:
         nextState = self.getSuccessor(action)
         if (nextState.reachedFood()):
             # print('reward 1')
-            return 10.0
+            return 10.
         if (nextState.isGameOver()):
             # print('reward -1')
-            return -100
+            return -100.
         # print('no reward\n')
-        return 1
+        return 1.
 
     def __hash__(self):
         """

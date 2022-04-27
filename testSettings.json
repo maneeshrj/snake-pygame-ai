@@ -9,6 +9,8 @@
     "exactq",
     "approxq"
   ],
-  "exactqCheckpoint": "",
-  "approxqCheckpoint": ""
+  "checkpoints": {
+      "exactq": "",
+      "approxq": "approxq_weights_2.pkl"
+  }
 }

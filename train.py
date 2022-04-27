@@ -66,7 +66,7 @@ class Trainer:
                 print(f"\nFinished episode {episode} of {trainingEpisodes}.")
                 if verbose:
                     self.totalTrainRewards = self.agent.accumTrainRewards - self.totalTrainRewards
-                    print('Accumulated rewards at 25% training interval:', self.totalTrainRewards)
+                    print('Accumulated rewards at 20% training interval:', self.totalTrainRewards)
                     self.totalTrainRewards = self.agent.accumTrainRewards
                 if saveWeights:
                     print('Saving checkpoint to', self.saveFile)
