@@ -26,6 +26,20 @@ def f2b(inp):
     if inp.ndim==3: return inp.permute(1,2,0)
     else: print('wrong dimensions')
 
+# Convert tensor to action
+def tensor_to_action(tensor):
+    action_num = tensor.item()
+    if action_num == 0:
+        return "UP"
+    elif action_num == 1:
+        return "DOWN"
+    elif action_num == 2:
+        return "LEFT"
+    elif action_num == 3:
+        return "RIGHT"
+    elif action_num == 4:
+        return "CONTINUE"
+
 #%% DQN Model Setup
 # Represents a transition from one state to another
 Transition = namedtuple('Transition',
@@ -101,25 +115,59 @@ memory = ReplayMemory(10000)
 
 steps_done = 0
 
-def select_action(state):
+def select_action(state, valid_actions):
     global steps_done
     sample = random.random()
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * steps_done / EPS_DECAY)
     steps_done += 1
+    action_as_str = None
+    actionDict = {}
     if sample > eps_threshold:
         with torch.no_grad():
             # t.max(1) will return largest column value of each row.
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
-            a = policy_net(state).max(dim=1)[1].view(1, 1)
-            # print(a.shape)
-            a = a.type(torch.LongTensor)
-            # print(a)
-            return a
-    else:
-        return torch.tensor([[random.randrange(n_actions)]], device=device, dtype=torch.long)
+            #print("NETWORK OUTPUT", policy_net(state))
+            network_output =  policy_net(state)
+            output_np = network_output.cpu().detach().numpy()[0]
 
+            actionDict['UP'] = output_np[0]
+            actionDict['DOWN'] = output_np[1]
+            actionDict['LEFT'] = output_np[2]
+            actionDict['RIGHT'] = output_np[3]
+            actionDict['CONTINUE'] = output_np[4]
+
+            # shuffle the valid actions
+            random.shuffle(valid_actions)
+            maxActionValue = actionDict[valid_actions[0]]
+            action_as_str = valid_actions[0]
+            for action in valid_actions[1:]:
+                if actionDict[action] >= maxActionValue:
+                    maxActionValue = actionDict[action]
+                    action_as_str = action
+
+    else:
+        # print("Taking random action")
+        # pick a random action from the list of valid actions
+        action_as_str = random.choice(valid_actions)
+    
+    action_num = -1
+    if action_as_str == 'UP':
+        action_num = 0
+    elif action_as_str == 'DOWN':
+        action_num = 1
+    elif action_as_str == 'LEFT':
+        action_num = 2
+    elif action_as_str == 'RIGHT':
+        action_num = 3
+    elif action_as_str == 'CONTINUE':
+        action_num = 4
+    else:
+        # Throw error, invalid action
+        print("Invalid action")
+    action = torch.tensor([[action_num]], device=device, dtype=torch.long)
+    return action
 
 episode_durations = []
 
@@ -162,7 +210,7 @@ def optimize_model():
     # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
     # columns of actions taken. These are the actions which would've been taken
     # for each batch state according to policy_net
-    print('calling policy net')
+    # print('calling policy net')
     state_action_values = policy_net(state_batch).gather(1, action_batch)
 
     # Compute V(s_{t+1}) for all next states.
@@ -172,7 +220,7 @@ def optimize_model():
     # state value or 0 in case the state was final.
     next_state_values = torch.zeros(BATCH_SIZE, device=device)
     
-    print('calling target net')
+    # print('calling target net')
     next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()
     # Compute the expected Q values
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
@@ -205,16 +253,20 @@ def optimize_model():
 
 learningTrial = Trial()
 
-num_episodes = 3
-for ep in range(num_episodes):
+num_episodes = 100
+for ep in range(1, num_episodes+1):
     print('Epoch', ep)
-    if (ep == 18):
-        print("here")
     # Initialize the environment and state
     gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT',
                           frameSizeX=100, frameSizeY=100)
-    game = Game(gameState, graphics=False, plain=True, 
+    
+    # If halfway through the epochs, then run the graphics
+    trainGraphics = False
+    if ep % (num_episodes // 2) == 0:
+        trainGraphics = True
+    game = Game(gameState, graphics=trainGraphics, plain=True, 
                 foodPosList=learningTrial.getFoodPosList())
+    learningTrial.setCurrentGame(game)
     game.setFoodPos()
 
     gameOver = False
@@ -227,11 +279,12 @@ for ep in range(num_episodes):
 
     t = 0
     while not gameOver:
-
-        action = select_action(state)
+        valid_actions = game.gameState.getValidActions()
+        action_tensor = select_action(state, valid_actions)
+        action_str = tensor_to_action(action_tensor)
         
-        reward = game.getReward(action)
-        gameOver, score = game.playStep(action)
+        reward = game.getReward(action_str)
+        gameOver, score = game.playStep(action_str)
         reward = torch.tensor([reward], device=device, dtype=torch.float)
 
         last_matrix = next_matrix
@@ -245,7 +298,7 @@ for ep in range(num_episodes):
             next_state = None
 
         # Save the experience to our memory
-        memory.push(state, action, next_state, reward)
+        memory.push(state, action_tensor, next_state, reward)
 
         # Move to the next state
         state = next_state
@@ -253,6 +306,9 @@ for ep in range(num_episodes):
         # Perform one step of the optimization (on the target network)
         optimize_model()
         t += 1
+    
+    game.gameOver()
+    
     episode_durations.append(t + 1)
     if ep % TARGET_UPDATE == 0:
         target_net.load_state_dict(policy_net.state_dict())
@@ -261,3 +317,10 @@ print('Episode durations:',episode_durations)
 print('Complete')
 # plt.ioff()
 plt.show()
+# %%
+# Save the model
+torch.save(target_net.state_dict(), 'DQN.pth')
+#%%
+# Load the model
+"""dqn_model = DQN((grid_height, grid_width, 2), n_actions).to(device)
+dqn_model.load_state_dict(torch.load('DQN.pth'))"""

@@ -5,10 +5,12 @@ import pygame, sys
 
 import numpy as np
 import matplotlib.pyplot as plt
+import torch
 
 from Snake import Game, GameState, Trial
 from agents import AGENT_MAP, getAgentName
 from qLearningAgent import QLearningAgent
+from dqnTrain import DQN, tensor_to_action
 
 WINDOW_SIZE_MAP = {
     'small': (100, 100),
@@ -21,7 +23,8 @@ if __name__ == "__main__":
     # Add command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--agents", help="Agents to use", nargs='+', type=str,
-                        default=["random", "reflex", "exactq", "approxq"], choices=["random", "reflex", "exactq", "approxq"])
+                        default=["random", "reflex", "exactq", "approxq", "dqn"],
+                        choices=["random", "reflex", "exactq", "approxq", "dqn"])
     parser.add_argument("-n", "--num_runs", help="Number of runs", type=int, default=1)
     parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true", default=False)
     parser.add_argument("-g", "--graphics", help="Use graphics", action="store_true", default=False)
@@ -43,6 +46,9 @@ if __name__ == "__main__":
     readFromJson = args.json
     framerate = args.framerate
     checkpoints = dict()
+    isDQN = False
+    grid_height = frameSizeY // 10
+    grid_width = frameSizeX // 10
 
     if readFromJson:
         with open('testSettings.json', "r") as settingsf:
@@ -67,14 +73,19 @@ if __name__ == "__main__":
         gameLengths, gameScores = [], []
         startTime = time.time()
         screenNp, screenMat, screenNpStacked = None, None, None
-        agent = agentType()
+        if isinstance(agent, DQN):
+            isDQN = True
+            agent = agentType((grid_height, grid_width, 2), 5)
+            agent.load_state_dict(torch.load("DQN.pth"))
+        else:
+            agent = agentType()
         if isinstance(agent, QLearningAgent):
             if agentType in checkpoints:
                 agent.loadCheckpoint(checkpoints[agentType])
             else:
                 agent.loadCheckpoint()
             agent.stopTraining()
-            
+        
         for i in range(testRuns):
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=frameSizeX,
                                   frameSizeY=frameSizeY)
@@ -88,7 +99,12 @@ if __name__ == "__main__":
             gameOver = False
             while not gameOver:
                 step += 1
-                action = agent.getNextAction()
+                if isDQN:
+                    # TODO: Add support for DQN
+                    pass
+                else:
+                    action = agent.getNextAction()
+                    
                 gameOver, score = env.playStep(action)
 
                 if useGraphics:
