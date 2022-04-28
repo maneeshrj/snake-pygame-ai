@@ -4,7 +4,7 @@ import random
 from reflexAgent import ReflexAgent
 from randomAgent import RandomAgent
 from qLearningAgent import QLearningAgent, ApproxQAgent
-from dqnTrain import DQN
+from dqn import DQN
 
 # Defined Agents:
 AGENT_MAP = {

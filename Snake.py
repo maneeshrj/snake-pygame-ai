@@ -126,7 +126,7 @@ class GameState:
             return 10.
         if (nextState.isGameOver()):
             # print('reward -1')
-            return -100.
+            return -1000.
         # print('no reward\n')
         return -0.001
 

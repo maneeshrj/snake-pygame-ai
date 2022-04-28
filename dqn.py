@@ -55,28 +55,28 @@ class ReplayMemory(object):
 # Should take a tensor of shape (10, 10, 2) and return a tensor of shape (5)
 class DQN(nn.Module):
     
-        def __init__(self, input_shape, n_actions):
-            super(DQN, self).__init__()
-            self.conv1 = nn.Conv2d(input_shape[2], 32, kernel_size=2, stride=1)
-            self.conv2 = nn.Conv2d(32, 64, kernel_size=2, stride=1)
-            self.conv3 = nn.Conv2d(64, 64, kernel_size=2, stride=1)
-            self.fc1 = nn.Linear(3136, 512)
-            self.fc2 = nn.Linear(512, n_actions)
+    def __init__(self, input_shape, n_actions):
+        super(DQN, self).__init__()
+        self.conv1 = nn.Conv2d(input_shape[2], 32, kernel_size=2, stride=1)
+        self.conv2 = nn.Conv2d(32, 16, kernel_size=2, stride=1)
+        self.conv3 = nn.Conv2d(16, 16, kernel_size=2, stride=1)
+        self.fc1 = nn.Linear(784, 200)
+        self.fc2 = nn.Linear(200, n_actions)
     
-        def forward(self, x):
-            x = b2f(x)#.unsqueeze(0)
-            # print('1',x.shape)
-            x = F.relu(self.conv1(x))
-            # print('2',x.shape)
-            x = F.relu(self.conv2(x))
-            # print('3',x.shape)
-            x = F.relu(self.conv3(x))
-            # print('4',x.shape)
-            x = x.view(x.size(0), -1)
-            # print('5',x.shape)
-            x = F.relu(self.fc1(x.view(x.size(0), -1)))
-            # print('6',x.shape)
-            x = self.fc2(x)
-            # print('7',x.shape)
-            # print()
-            return x
+    def forward(self, x):
+        x = b2f(x)#.unsqueeze(0)
+        # print('1',x.shape)
+        x = F.relu(self.conv1(x))
+        # print('2',x.shape)
+        x = F.relu(self.conv2(x))
+        # print('3',x.shape)
+        x = F.relu(self.conv3(x))
+        # print('4',x.shape)
+        x = x.view(x.size(0), -1)
+        # print('5',x.shape)
+        x = F.relu(self.fc1(x.view(x.size(0), -1)))
+        # print('6',x.shape)
+        x = self.fc2(x)
+        # print('7',x.shape)
+        # print()
+        return x

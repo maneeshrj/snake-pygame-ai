@@ -179,22 +179,24 @@ def optimize_model():
 
 learningTrial = Trial()
 
-num_episodes = 100
+num_episodes = 5000
+moreThanZeroScores = []
 for ep in range(1, num_episodes+1):
-    print('Epoch', ep)
+    if ep % (num_episodes // 4) == 0:
+        print('Epoch', ep)
     # Initialize the environment and state
     gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT',
                           frameSizeX=100, frameSizeY=100)
     
     # If halfway through the epochs, then run the graphics
     trainGraphics = False
-    if ep % (num_episodes // 2) == 0:
+    if ep % (num_episodes // 4) == 0:
         trainGraphics = True
     game = Game(gameState, graphics=trainGraphics, plain=True, 
-                foodPosList=learningTrial.getFoodPosList())
+                foodPosList=learningTrial.getFoodPosList(), framerate=5)
     learningTrial.setCurrentGame(game)
     game.setFoodPos()
-
+    
     gameOver = False
 
     # The state is the game frame stacked on top of the next state frame
@@ -222,6 +224,10 @@ for ep in range(1, num_episodes+1):
             next_state = next_state.unsqueeze(0)
         else:
             next_state = None
+            if score > 0:
+                moreThanZeroScores.append(score)
+            if ep % (num_episodes // 4) == 0:
+                print(moreThanZeroScores)
 
         # Save the experience to our memory
         memory.push(state, action_tensor, next_state, reward)
