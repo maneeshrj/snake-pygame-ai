@@ -70,12 +70,13 @@ if __name__ == "__main__":
         gameLengths, gameScores = [], []
         startTime = time.time()
         screenNp, screenMat, screenNpStacked = None, None, None
-        if isinstance(agent, DQN):
+        if isinstance(agentType, DQN):
             isDQN = True
             agent = agentType((grid_height, grid_width, 2), 5)
             agent.load_state_dict(torch.load("DQN.pth"))
         else:
             agent = agentType()
+            
         if isinstance(agent, QLearningAgent):
             if agentType in checkpoints:
                 agent.loadCheckpoint(checkpoints[agentType])
