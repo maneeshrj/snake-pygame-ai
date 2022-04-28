@@ -10,6 +10,7 @@ import torch
 from Snake import Game, GameState, Trial
 from agents import AGENT_MAP, getAgentName
 from qLearningAgent import QLearningAgent
+from dqnAgent import DQNAgent
 from dqn import DQN, tensor_to_action
 
 WINDOW_SIZE_MAP = {
@@ -70,13 +71,13 @@ if __name__ == "__main__":
         gameLengths, gameScores = [], []
         startTime = time.time()
         screenNp, screenMat, screenNpStacked = None, None, None
-        if isinstance(agentType, DQN):
+        agent = agentType()
+        if isinstance(agent, DQNAgent):
             isDQN = True
-            agent = agentType((grid_height, grid_width, 2), 5)
-            agent.load_state_dict(torch.load("DQN.pth"))
-        else:
-            agent = agentType()
-            
+            net = DQN((grid_height, grid_width, 2), 5)
+            net.load_state_dict(torch.load("DQN.pth"))
+            agent.loadNetwork(net)
+
         if isinstance(agent, QLearningAgent):
             if agentType in checkpoints:
                 agent.loadCheckpoint(checkpoints[agentType])
@@ -97,11 +98,7 @@ if __name__ == "__main__":
             gameOver = False
             while not gameOver:
                 step += 1
-                if isDQN:
-                    # TODO: Add support for DQN
-                    pass
-                else:
-                    action = agent.getNextAction()
+                action = agent.getNextAction()
                     
                 gameOver, score = env.playStep(action)
 
@@ -147,8 +144,8 @@ if __name__ == "__main__":
         ##matplotlib display image as greyscale
         print(screenNpStacked.shape)
         # print('Shape', screen_np.shape, ' min/max', np.min(screen_np), ' / ', np.max(screen_np))
-        fig, ax = plt.subplots(1,2)
-        ax[0].imshow(screenNpStacked[...,0], cmap='gray')
-        ax[1].imshow(screenNpStacked[...,1], cmap='gray')
-        print(screenMat)
-        plt.show()
+        # fig, ax = plt.subplots(1,2)
+        # ax[0].imshow(screenNpStacked[...,0], cmap='gray')
+        # ax[1].imshow(screenNpStacked[...,1], cmap='gray')
+        # print(screenMat)
+        # plt.show()

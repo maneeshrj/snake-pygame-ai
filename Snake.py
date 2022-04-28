@@ -7,6 +7,7 @@ COLORS = {
     "white": pygame.Color(255, 255, 255),
     "red": pygame.Color(255, 0, 0),
     "green": pygame.Color(0, 255, 0),
+    "darkgreen": pygame.Color(0, 200, 0)
 }
 
 class GameState:
@@ -300,7 +301,8 @@ class Game:
     # Create the game window
     def drawWindow(self):
         self.game_window.fill(COLORS["black"])
-        for pos in self.gameState.pos:
+        pygame.draw.rect(self.game_window, COLORS["darkgreen"], pygame.Rect(self.gameState.pos[0][0], self.gameState.pos[0][1], 10, 10))
+        for pos in self.gameState.pos[1:]:
             pygame.draw.rect(self.game_window, COLORS["green"], pygame.Rect(pos[0], pos[1], 10, 10))
 
         # Draw snake food

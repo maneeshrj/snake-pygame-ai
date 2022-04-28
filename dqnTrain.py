@@ -254,5 +254,5 @@ plt.show()
 torch.save(target_net.state_dict(), 'DQN.pth')
 #%%
 # Load the model
-"""dqn_model = DQN((grid_height, grid_width, 2), n_actions).to(device)
-dqn_model.load_state_dict(torch.load('DQN.pth'))"""
+# dqn_model = DQN((grid_height, grid_width, 2), n_actions).to(device)
+# dqn_model.load_state_dict(torch.load('DQN.pth'))

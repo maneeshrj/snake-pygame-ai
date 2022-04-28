@@ -10,11 +10,6 @@ def b2f(inp):
     elif inp.ndim==4: return inp.permute(0,3,1,2)
     else: print('wrong dimensions')
 
-# Moves first dimension of 3D tensor to the back
-def f2b(inp):
-    if inp.ndim==3: return inp.permute(1,2,0)
-    else: print('wrong dimensions')
-
 # Convert tensor to action
 def tensor_to_action(tensor):
     action_num = tensor.item()

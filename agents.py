@@ -4,7 +4,7 @@ import random
 from reflexAgent import ReflexAgent
 from randomAgent import RandomAgent
 from qLearningAgent import QLearningAgent, ApproxQAgent
-from dqn import DQN
+from dqnAgent import DQNAgent
 
 # Defined Agents:
 AGENT_MAP = {
@@ -12,7 +12,7 @@ AGENT_MAP = {
     'random': RandomAgent,
     'exactq': QLearningAgent,
     'approxq': ApproxQAgent,
-    'dqn': DQN
+    'dqn': DQNAgent
 }
 
 # Return the name of the agent
@@ -25,6 +25,6 @@ def getAgentName(agent):
         return 'Q-Learning Agent'
     if agent == ApproxQAgent:
         return 'Approximate Q-Learning Agent'
-    if agent == DQN:
+    if agent == DQNAgent:
         return 'Deep Q-Learning Agent'
     return 'unknown agent'
