@@ -128,7 +128,7 @@ class GameState:
             # print('reward -1')
             return -100.
         # print('no reward\n')
-        return 1.
+        return -0.001
 
     def __hash__(self):
         """

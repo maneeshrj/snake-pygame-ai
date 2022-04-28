@@ -10,7 +10,7 @@ import torch
 from Snake import Game, GameState, Trial
 from agents import AGENT_MAP, getAgentName
 from qLearningAgent import QLearningAgent
-from dqnTrain import DQN, tensor_to_action
+from dqn import DQN, tensor_to_action
 
 WINDOW_SIZE_MAP = {
     'small': (100, 100),

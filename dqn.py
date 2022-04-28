@@ -4,14 +4,42 @@ from collections import namedtuple, deque
 import torch.nn as nn
 import torch.nn.functional as F
 
+# Moves last dimension of 3D tensor to the front
+def b2f(inp):
+    if inp.ndim==3: return inp.permute(2,0,1)
+    elif inp.ndim==4: return inp.permute(0,3,1,2)
+    else: print('wrong dimensions')
+
+# Moves first dimension of 3D tensor to the back
+def f2b(inp):
+    if inp.ndim==3: return inp.permute(1,2,0)
+    else: print('wrong dimensions')
+
+# Convert tensor to action
+def tensor_to_action(tensor):
+    action_num = tensor.item()
+    if action_num == 0:
+        return "UP"
+    elif action_num == 1:
+        return "DOWN"
+    elif action_num == 2:
+        return "LEFT"
+    elif action_num == 3:
+        return "RIGHT"
+    elif action_num == 4:
+        return "CONTINUE"
+
+#%% DQN Model Setup
+# Represents a transition from one state to another
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 
-
+# Replay Memory stores the last <capacity> experiences to sample from
+# for training the DQN
 class ReplayMemory(object):
 
     def __init__(self, capacity):
-        self.memory = deque([], maxlen=capacity)
+        self.memory = deque([],maxlen=capacity)
 
     def push(self, *args):
         """Save a transition"""
@@ -23,55 +51,32 @@ class ReplayMemory(object):
     def __len__(self):
         return len(self.memory)
 
-
+# DQN
+# Should take a tensor of shape (10, 10, 2) and return a tensor of shape (5)
 class DQN(nn.Module):
-
-    def __init__(self, h, w, outputs):
-        super(DQN, self).__init__()
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=5, stride=2)
-        self.bn1 = nn.BatchNorm2d(16)
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=5, stride=2)
-        self.bn2 = nn.BatchNorm2d(32)
-        self.conv3 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
-        self.bn3 = nn.BatchNorm2d(32)
-
-        # Number of Linear input connections depends on output of conv2d layers
-        # and therefore the input image size, so compute it.
-
-        # TODO: Downscale image by factor of 10
-
-        def conv2d_size_out(size, kernel_size=5, stride=2):
-            return (size - (kernel_size - 1) - 1) // stride + 1
-
-        convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(w)))
-        convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(h)))
-        linear_input_size = convw * convh * 32
-        self.head = nn.Linear(linear_input_size, outputs)
-
-    # Called with either one element to determine next action, or a batch
-    # during optimization. Returns tensor([[left0exp,right0exp]...]).
-    def forward(self, x):
-        x = x.to("cpu")
-        print(x)
-        x = F.relu(self.bn1(self.conv1(x)))
-
-        x = F.relu(self.bn2(self.conv2(x)))
-        x = F.relu(self.bn3(self.conv3(x)))
-        return self.head(x.view(x.size(0), -1))
-
-
-"""def plot_durations():
-    plt.figure(2)
-    plt.clf()
-    durations_t = torch.tensor(episode_durations, dtype=torch.float)
-    plt.title('Training...')
-    plt.xlabel('Episode')
-    plt.ylabel('Duration')
-    plt.plot(durations_t.numpy())
-    # Take 100 episode averages and plot them too
-    if len(durations_t) >= 100:
-        means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
-        means = torch.cat((torch.zeros(99), means))
-        plt.plot(means.numpy())
-
-    plt.pause(0.001)  # pause a bit so that plots are updated"""
+    
+        def __init__(self, input_shape, n_actions):
+            super(DQN, self).__init__()
+            self.conv1 = nn.Conv2d(input_shape[2], 32, kernel_size=2, stride=1)
+            self.conv2 = nn.Conv2d(32, 64, kernel_size=2, stride=1)
+            self.conv3 = nn.Conv2d(64, 64, kernel_size=2, stride=1)
+            self.fc1 = nn.Linear(3136, 512)
+            self.fc2 = nn.Linear(512, n_actions)
+    
+        def forward(self, x):
+            x = b2f(x)#.unsqueeze(0)
+            # print('1',x.shape)
+            x = F.relu(self.conv1(x))
+            # print('2',x.shape)
+            x = F.relu(self.conv2(x))
+            # print('3',x.shape)
+            x = F.relu(self.conv3(x))
+            # print('4',x.shape)
+            x = x.view(x.size(0), -1)
+            # print('5',x.shape)
+            x = F.relu(self.fc1(x.view(x.size(0), -1)))
+            # print('6',x.shape)
+            x = self.fc2(x)
+            # print('7',x.shape)
+            # print()
+            return x
