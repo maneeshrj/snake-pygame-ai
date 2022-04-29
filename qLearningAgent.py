@@ -187,7 +187,7 @@ def getFeatures(state, action, extractor=1):
     nextFoodDist = distance(nextHead, foodPos) / ((state.frameX // 10) * (state.frameY // 10))
     currFoodDist = distance(curHead, foodPos) / ((state.frameX // 10) * (state.frameY // 10))
     # features['foodDist'] = nextFoodDist - currFoodDist
-    features['foodDist'] = nextFoodDist
+    # features['foodDist'] = nextFoodDist
 
     if extractor == 1:
         # Get the next state as a matrix
@@ -203,6 +203,11 @@ def getFeatures(state, action, extractor=1):
                 minDistToBody = distToBody
         
         features['minDistToBody'] = (minDistToBody / ((state.frameX // 10) * (state.frameY // 10)))
+        
+        features['distToRightWall']  = abs(state.frameX//10 - nextX)
+        features['distToLeftWall']  = abs(nextX) + 1
+        features['distToBottomWall']  = abs(state.frameY//10 - nextY)
+        features['distToTopWall']  = abs(nextY) + 1
         
         # print("*" * 40)
         # print('Trying action', action)

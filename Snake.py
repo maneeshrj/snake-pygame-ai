@@ -118,9 +118,9 @@ class GameState:
         """
         Returns a numerical reward for taking an action from the current state
         """
-        """if step == 10000:
+        if step == 10000:
             self.timeout = True
-            return -10.0"""
+            return -10.0
         nextState = self.getSuccessor(action)
         if (nextState.reachedFood()):
             # print('reward 1')
