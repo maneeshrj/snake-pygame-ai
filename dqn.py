@@ -59,6 +59,7 @@ class DQN(nn.Module):
         self.fc2 = nn.Linear(200, n_actions)
     
     def forward(self, x):
+        x = x.to("cuda")
         x = b2f(x)#.unsqueeze(0)
         # print('1',x.shape)
         x = F.relu(self.conv1(x))
@@ -67,6 +68,7 @@ class DQN(nn.Module):
         # print('3',x.shape)
         x = F.relu(self.conv3(x))
         # print('4',x.shape)
+        x = x.contiguous()
         x = x.view(x.size(0), -1)
         # print('5',x.shape)
         x = F.relu(self.fc1(x.view(x.size(0), -1)))

@@ -1,3 +1,4 @@
+print("Running!")
 #%% Imports
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,6 +10,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torchvision.transforms as T
 import math
+import time
 
 from itertools import count
 from Snake import Game, GameState, Trial
@@ -16,6 +18,10 @@ from Snake import Game, GameState, Trial
 from dqn import DQN, ReplayMemory, tensor_to_action, Transition
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+print("Is a GPU available?", torch.cuda.is_available())
+print("How many?", torch.cuda.device_count())
+print("GPU Properties", torch.cuda.get_device_properties(0))
 
 
 #%% Training Setup
@@ -95,9 +101,9 @@ def select_action(state, valid_actions):
     action = torch.tensor([[action_num]], device=device, dtype=torch.long)
     return action
 
-episode_durations = []
+#episode_durations = []
 
-def plot_durations():
+"""def plot_durations():
     plt.figure(2)
     plt.clf()
     durations_t = torch.tensor(episode_durations, dtype=torch.float)
@@ -111,7 +117,7 @@ def plot_durations():
         means = torch.cat((torch.zeros(99), means))
         plt.plot(means.numpy())
 
-    plt.pause(0.001)  # pause a bit so that plots are updated
+    plt.pause(0.001)  # pause a bit so that plots are updated"""
 
 #%% Optimizer
 def optimize_model():
@@ -178,9 +184,9 @@ def optimize_model():
 # target network with the policy network every TARGET_UPDATE steps
 
 learningTrial = Trial()
-
-num_episodes = 5000
-moreThanZeroScores = []
+num_episodes = 1000
+#moreThanZeroScores = []
+print("Starting Training")
 for ep in range(1, num_episodes+1):
     if ep % (num_episodes // 4) == 0:
         print('Epoch', ep)
@@ -190,8 +196,9 @@ for ep in range(1, num_episodes+1):
     
     # If halfway through the epochs, then run the graphics
     trainGraphics = False
-    if ep % (num_episodes // 4) == 0:
-        trainGraphics = True
+    # Mute for training on Argon:
+    """if ep % (num_episodes // 4) == 0:
+        trainGraphics = True"""
     game = Game(gameState, graphics=trainGraphics, plain=True, 
                 foodPosList=learningTrial.getFoodPosList(), framerate=5)
     learningTrial.setCurrentGame(game)
@@ -202,7 +209,7 @@ for ep in range(1, num_episodes+1):
     # The state is the game frame stacked on top of the next state frame
     start_matrix = game.getCurrentState().getAsMatrix()
     next_matrix = game.getNextState("CONTINUE").getAsMatrix()
-    state = torch.tensor(np.dstack((start_matrix, next_matrix)), device=device, dtype=torch.float)
+    state = torch.tensor(np.dstack((start_matrix, next_matrix)), dtype=torch.float)
     state = state.unsqueeze(0)
 
     t = 0
@@ -220,14 +227,15 @@ for ep in range(1, num_episodes+1):
 
         if not gameOver:
             # print(t)
-            next_state = torch.tensor(np.dstack((start_matrix, next_matrix)), device=device, dtype=torch.float)
+            next_state = torch.tensor(np.dstack((start_matrix, next_matrix)), dtype=torch.float)
             next_state = next_state.unsqueeze(0)
         else:
             next_state = None
-            if score > 0:
+            # Mute for training on ARGON:
+            """if score > 0:
                 moreThanZeroScores.append(score)
             if ep % (num_episodes // 4) == 0:
-                print(moreThanZeroScores)
+                print(moreThanZeroScores)"""
 
         # Save the experience to our memory
         memory.push(state, action_tensor, next_state, reward)
@@ -241,11 +249,9 @@ for ep in range(1, num_episodes+1):
     
     game.gameOver()
     
-    episode_durations.append(t + 1)
+    #episode_durations.append(t + 1)
     if ep % TARGET_UPDATE == 0:
         target_net.load_state_dict(policy_net.state_dict())
-
-print('Episode durations:',episode_durations)
 print('Complete')
 # plt.ioff()
 plt.show()
