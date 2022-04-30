@@ -150,7 +150,7 @@ if __name__ == "__main__":
         saveFilename = 'qvalues.pkl'
     elif agentType == "approxq":
         agent = ApproxQAgent()
-        saveFilename = 'approxq_weights_2.pkl'
+        saveFilename = 'approxq_weights.pkl'
     
     if loadQValues:
         agent.loadCheckpoint(saveFilename)

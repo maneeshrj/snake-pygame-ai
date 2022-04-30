@@ -183,11 +183,13 @@ def getFeatures(state, action, extractor=1):
     nextHead = updatePosition(curHead, action)
     foodPos = state.getFoodPos()
     
+    frameX, frameY = (state.frameX//10), (state.frameY//10)
+    
     # get distance to food as a number between 0 and 1
-    nextFoodDist = distance(nextHead, foodPos) / ((state.frameX // 10) * (state.frameY // 10))
-    currFoodDist = distance(curHead, foodPos) / ((state.frameX // 10) * (state.frameY // 10))
+    nextFoodDist = distance(nextHead, foodPos) / (frameX * frameY)
+    currFoodDist = distance(curHead, foodPos) / (frameX * frameY)
     # features['foodDist'] = nextFoodDist - currFoodDist
-    # features['foodDist'] = nextFoodDist
+    features['foodDist'] = nextFoodDist
 
     if extractor == 1:
         # Get the next state as a matrix
@@ -202,12 +204,43 @@ def getFeatures(state, action, extractor=1):
             if distToBody < minDistToBody:
                 minDistToBody = distToBody
         
-        features['minDistToBody'] = (minDistToBody / ((state.frameX // 10) * (state.frameY // 10)))
+        features['minDistToBody'] = (minDistToBody / (frameX * frameY))
         
-        features['distToRightWall']  = abs(state.frameX//10 - nextX)
-        features['distToLeftWall']  = abs(nextX) + 1
-        features['distToBottomWall']  = abs(state.frameY//10 - nextY)
-        features['distToTopWall']  = abs(nextY) + 1
+        foodX, foodY = foodPos[0]//10, foodPos[1]//10
+        features['bodyObstacle'] = 0.
+        features['bodyObstacle2'] = 0.
+        if foodX == nextX:
+            if direction == 'UP':# and foodY < nextY:
+                for i in range(0,nextY):
+                    if nextMat[i, nextX] > 0:
+                        features['bodyObstacle'] = 1.0
+                        
+            if direction == 'DOWN':# and foodY > nextY:
+                for i in range(nextY+1, frameY):
+                    if nextMat[i, nextX] > 0:
+                        features['bodyObstacle'] = 1.0
+        elif foodY == nextY:
+            if direction == 'LEFT':# and foodX < nextX:
+                for i in range(0,nextX):
+                    if nextMat[nextY, i] > 0:
+                        features['bodyObstacle'] = 1.0
+            if direction == 'RIGHT':# and foodX > nextX:
+                for i in range(nextX+1, frameX):
+                    if nextMat[nextY, i] > 0:
+                        features['bodyObstacle'] = 1.0
+        
+        # centerX, centerY = (frameX)/2, (frameY)/2
+        # features['distToCenter'] = distance(nextHead,[centerX, centerY]) / (frameX*frameY)
+        
+        # features['distToWall'] = 0
+        # if(direction == 'RIGHT'):
+        #     features['distToWall']  = abs(frameX - nextX)/(frameX*frameY)
+        # if(direction == 'LEFT'):
+        #     features['distToWall']  = (nextX+1)/(frameX*frameY)
+        # if(direction == 'UP'):
+        #     features['distToWall']  = abs(frameY - nextY)/(frameX*frameY)
+        # if(direction == 'DOWN'):
+        #     features['distToWall']  = (nextY+1)/(frameX*frameY)
         
         # print("*" * 40)
         # print('Trying action', action)

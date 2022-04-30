@@ -38,7 +38,8 @@ if __name__ == "__main__":
 
     # Parse arguments and assign to variables
     args = parser.parse_args()
-    agents = [AGENT_MAP[agent] for agent in args.agents]
+    agentNames = args.agents
+    agents = [AGENT_MAP[agent] for agent in agentNames]
     testRuns = args.num_runs
     verbose = args.verbose
     useGraphics = args.graphics
@@ -58,13 +59,14 @@ if __name__ == "__main__":
             testRuns = settings['testRuns']
             verbose = settings['verbose']
             (frameSizeX, frameSizeY) = WINDOW_SIZE_MAP[settings['screenSize']]
-            agents = [AGENT_MAP[agent] for agent in settings['agents']]
+            agentNames = settings['agents']
+            agents = [AGENT_MAP[agent] for agent in agentNames]
             checkpoints = settings['checkpoints']
 
     avgGameLengths, avgGameScores = [], []
 
     # Test each supplied agent
-    for agentType in agents:
+    for i, agentType in enumerate(agents):
         print()
         print('=' * 40)
         print('Testing', getAgentName(agentType))
@@ -79,10 +81,16 @@ if __name__ == "__main__":
             agent.loadNetwork(net)
 
         if isinstance(agent, QLearningAgent):
-            if agentType in checkpoints:
-                agent.loadCheckpoint(checkpoints[agentType])
+            # print(agentType)
+            # print(agentNames[i])
+            # print(checkpoints)
+            checkpoint = checkpoints[agentNames[i]]
+            if (checkpoint != None) and len(checkpoint) > 0:
+                agent.loadCheckpoint(checkpoint)
+                print('Loading checkpoint from', checkpoint)
             else:
                 agent.loadCheckpoint()
+                print('Loading default checkpoint file')
             agent.stopTraining()  # unnecessary, just to be safe
         
         for i in range(testRuns):

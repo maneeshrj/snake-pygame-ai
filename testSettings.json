@@ -1,6 +1,6 @@
 {
   "useGraphics": false,
-  "testRuns": 500,
+  "testRuns": 1000,
   "verbose": false,
   "screenSize": "small",
   "agents": [
@@ -11,6 +11,6 @@
   ],
   "checkpoints": {
       "exactq": "",
-      "approxq": "approxq_weights_2.pkl"
+      "approxq": "approxq_weights_3.pkl"
   }
 }
