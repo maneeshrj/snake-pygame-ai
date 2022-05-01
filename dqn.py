@@ -1,8 +1,11 @@
 import random
 from collections import namedtuple, deque
+import torch
 
 import torch.nn as nn
 import torch.nn.functional as F
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Moves last dimension of 3D tensor to the front
 def b2f(inp):
@@ -59,7 +62,7 @@ class DQN(nn.Module):
         self.fc2 = nn.Linear(200, n_actions)
     
     def forward(self, x):
-        x = x.to("cuda")
+        x = x.to(device)
         x = b2f(x)#.unsqueeze(0)
         # print('1',x.shape)
         x = F.relu(self.conv1(x))

@@ -1,13 +1,10 @@
 {
-  "useGraphics": false,
-  "testRuns": 1000,
+  "useGraphics": true,
+  "testRuns": 40,
   "verbose": false,
   "screenSize": "small",
   "agents": [
-    "reflex",
-    "random",
-    "exactq",
-    "approxq"
+    "dqn"
   ],
   "checkpoints": {
       "exactq": "",

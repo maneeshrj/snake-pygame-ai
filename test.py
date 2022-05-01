@@ -105,6 +105,9 @@ if __name__ == "__main__":
             action = 'CONTINUE'
             gameOver = False
             while not gameOver:
+                if step == 100:
+                    print("timeout reached")
+                    break
                 step += 1
                 action = agent.getNextAction()
                     

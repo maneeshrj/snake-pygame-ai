@@ -21,7 +21,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 print("Is a GPU available?", torch.cuda.is_available())
 print("How many?", torch.cuda.device_count())
-print("GPU Properties", torch.cuda.get_device_properties(0))
+# print("GPU Properties", torch.cuda.get_device_properties(0))
 
 
 #%% Training Setup
@@ -185,10 +185,10 @@ def optimize_model():
 
 learningTrial = Trial()
 num_episodes = 1000
-#moreThanZeroScores = []
+moreThanZeroScores = []
 print("Starting Training")
 for ep in range(1, num_episodes+1):
-    if ep % (num_episodes // 4) == 0:
+    if ep % (num_episodes // 10) == 0:
         print('Epoch', ep)
     # Initialize the environment and state
     gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT',
@@ -232,10 +232,11 @@ for ep in range(1, num_episodes+1):
         else:
             next_state = None
             # Mute for training on ARGON:
-            """if score > 0:
+            if score > 0:
                 moreThanZeroScores.append(score)
-            if ep % (num_episodes // 4) == 0:
-                print(moreThanZeroScores)"""
+            if ep % (num_episodes // 10) == 0:
+                print(moreThanZeroScores)
+                moreThanZeroScores = []
 
         # Save the experience to our memory
         memory.push(state, action_tensor, next_state, reward)

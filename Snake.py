@@ -127,9 +127,9 @@ class GameState:
             return 10.
         if (nextState.isGameOver()):
             # print('reward -1')
-            return -1000.
+            return -100.
         # print('no reward\n')
-        return -0.001
+        return -0.04
 
     def __hash__(self):
         """
