@@ -168,7 +168,7 @@ if __name__ == "__main__":
     target_net.eval()
 
     optimizer = optim.RMSprop(policy_net.parameters())
-    memory = ReplayMemory(10000)
+    memory = ReplayMemory(20000)
 
     # steps_done = 0
 
@@ -264,8 +264,8 @@ if __name__ == "__main__":
             run_data.append([epochTimes[-1], score, curr_eps, loss])
             
         if ep % (num_episodes // 10) == 0:
-            epSummary = '\nEpoch {:<3d}\tAvg_score={:<3.2f}\tNonzeros={:<3d} (max {:<3d})'.format(ep, np.mean(intervalScores), np.count_nonzero(intervalScores), max(intervalScores))
-            epSummary += '\nAvg_loss={:<.2f}\teps={:<.2f}\t({:<.2f} sec/ep)'.format(np.mean(intervalLosses), curr_eps, np.mean(epochTimes))
+            epSummary = '\nEpoch {:<3d}\tAvg_score={:<3.2f}\tNonzeros={:d}\tMax={:<3d}'.format(ep, np.mean(intervalScores), np.count_nonzero(intervalScores), max(intervalScores))
+            epSummary += '\nAvg_loss={:<.2f}\teps={:<.2f}\t({:<.2f} sec/ep)'.format(np.mean(np.where(intervalLosses != None)),curr_eps, np.mean(epochTimes))
             # print('Scores:', intervalScores)
             intervalScores, intervalLosses, epochTimes = [], [], []
             print(epSummary)

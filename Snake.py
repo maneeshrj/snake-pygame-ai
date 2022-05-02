@@ -126,7 +126,7 @@ class GameState:
         if nextState.isGameOver():
             return -10.0
 		# otherwise default reward
-        if step == 10000:
+        if step == 1000:
             self.timeout = True	# gameover if stuck in a loop
         return -0.1
 
