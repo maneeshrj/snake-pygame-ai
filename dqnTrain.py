@@ -128,10 +128,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--episodes', type=int, default=100, help='number of episodes to train for')
     parser.add_argument('-g', '--graphics', action='store_true', help='show graphics')
+    parser.add_argument('-s', '--save', action='store_true', help='save model')
+    parser.add_argument('-r', '--random_food', action='store_true', help='random food')
 
     args = parser.parse_args()
     num_episodes = args.episodes
     show_graphics = args.graphics
+    save_model = args.save
+    random_food = args.random_food
 
     if torch.cuda.is_available():
         print(f"{torch.cuda.device_count()} GPU(s) available.")
@@ -175,8 +179,13 @@ if __name__ == "__main__":
         if show_graphics:
             if ep % (num_episodes // 5) == 0:
                 trainGraphics = True
-        game = Game(gameState, graphics=trainGraphics, plain=True, 
-                    foodPosList=learningTrial.getFoodPosList(), framerate=5)
+        
+        if random_food:
+            game = Game(gameState, graphics=trainGraphics, plain=True, randomFood=True, framerate=5)
+        else:
+            game = Game(gameState, graphics=trainGraphics, plain=True, 
+                        foodPosList=learningTrial.getFoodPosList(), framerate=5)
+        
         learningTrial.setCurrentGame(game)
         game.setFoodPos()
         
@@ -235,6 +244,7 @@ if __name__ == "__main__":
         if ep % TARGET_UPDATE == 0:
             target_net.load_state_dict(policy_net.state_dict())
     print('Complete')
-
-    print("Saving model")
-    torch.save(target_net.state_dict(), 'DQN.pth')
+    
+    if save_model:
+        print("Saving model")
+        torch.save(target_net.state_dict(), f'DQN_{num_episodes}_epochs.pth')
