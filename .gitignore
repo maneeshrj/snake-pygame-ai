@@ -166,3 +166,4 @@ cython_debug/
 .history
 .idea
 *.pth
+*.csv

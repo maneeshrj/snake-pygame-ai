@@ -11,6 +11,7 @@ import torchvision.transforms as T
 import math
 import time
 import argparse
+import csv
 
 from itertools import count
 from Snake import Game, GameState, Trial
@@ -117,13 +118,13 @@ def optimize_model():
     # Compute Huber loss
     criterion = nn.SmoothL1Loss()
     loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
-
     # Optimize the model
     optimizer.zero_grad()
     loss.backward()
     for param in policy_net.parameters():
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
+    return loss.item()
 
 if __name__ == "__main__":
 
@@ -167,8 +168,10 @@ if __name__ == "__main__":
 
     learningTrial = Trial()
     moreThanZeroScores = []
+    run_data = []
     print("Starting Training")
     for ep in range(1, num_episodes+1):
+        start_time = time.time()
         if ep % (num_episodes // 10) == 0:
             print('Epoch', ep)
         # Initialize the environment and state
@@ -207,8 +210,6 @@ if __name__ == "__main__":
             action_str = tensor_to_action(action_tensor)
             
             reward = game.getReward(action_str)
-            if trainGraphics:
-                print(reward)
             gameOver, score = game.playStep(action_str)
             reward = torch.tensor([reward], device=device, dtype=torch.float)
 
@@ -224,11 +225,11 @@ if __name__ == "__main__":
             else:
                 next_state = None
                 # Mute for training on ARGON:
-                if score > 0:
+                """if score > 0:
                     moreThanZeroScores.append(score)
                 if ep % (num_episodes // 10) == 0:
                     print(moreThanZeroScores)
-                    moreThanZeroScores = []
+                    moreThanZeroScores = []"""
 
             # Save the experience to our memory
             memory.push(state, action_tensor, next_state, reward)
@@ -237,7 +238,7 @@ if __name__ == "__main__":
             state = next_state
 
             # Perform one step of the optimization (on the target network)
-            optimize_model()
+            loss = optimize_model()
             t += 1
         
         game.gameOver()
@@ -245,8 +246,20 @@ if __name__ == "__main__":
         #episode_durations.append(t + 1)
         if ep % TARGET_UPDATE == 0:
             target_net.load_state_dict(policy_net.state_dict())
+        
+        # Time, score, eps
+        run_data.append([time.time() - start_time, score, EPS_END + (EPS_START - EPS_END) * \
+                                                        math.exp(-1. * ep / EPS_DECAY), loss])
     print('Complete')
     
     if save_model:
         torch.save(target_net.state_dict(), f'DQN_{num_episodes}_epochs.pth')
         print(f"Saved model to DQN_{num_episodes}_epochs.pth")
+
+    # Save the run data
+    with open('run_data.csv', 'w') as csvfile:
+        writer = csv.writer(csvfile)
+        # Write the header
+        writer.writerow(['time', 'score', 'eps', 'loss'])
+        writer.writerows(run_data)
+        print("Saved run data to run_data.csv")
