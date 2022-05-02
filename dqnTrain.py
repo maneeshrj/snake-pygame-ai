@@ -133,12 +133,14 @@ if __name__ == "__main__":
     parser.add_argument('-g', '--graphics', action='store_true', help='show graphics')
     parser.add_argument('-s', '--save', action='store_true', help='save model')
     parser.add_argument('-r', '--random_food', action='store_true', help='random food')
+    parser.add_argument('-d', '--record_data', action='store_true', help='record run data')
 
     args = parser.parse_args()
     num_episodes = args.episodes
     show_graphics = args.graphics
     save_model = args.save
     random_food = args.random_food
+    record_data = args.record_data
 
     if torch.cuda.is_available():
         print(f"{torch.cuda.device_count()} GPU(s) available.")
@@ -248,8 +250,9 @@ if __name__ == "__main__":
             target_net.load_state_dict(policy_net.state_dict())
         
         # Time, score, eps
-        run_data.append([time.time() - start_time, score, EPS_END + (EPS_START - EPS_END) * \
-                                                        math.exp(-1. * ep / EPS_DECAY), loss])
+        if record_data:
+            run_data.append([time.time() - start_time, score, EPS_END + (EPS_START - EPS_END) * \
+                                                            math.exp(-1. * ep / EPS_DECAY), loss])
     print('Complete')
     
     if save_model:
