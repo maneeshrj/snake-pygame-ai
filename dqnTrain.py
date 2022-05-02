@@ -19,13 +19,14 @@ from dqn import DQN, ReplayMemory, tensor_to_action, Transition
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def select_action(state, valid_actions, cur_epoch):
+def select_action(state, valid_actions, cur_epoch, network):
     sample = random.random()
     if cur_epoch >= 0:
         eps_threshold = EPS_END + (EPS_START - EPS_END) * \
             math.exp(-1. * cur_epoch / EPS_DECAY)
+        print('training action')
     else:
-        eps_threshold = 1.0
+        eps_threshold = 0.0
 
     action_as_str = None
     actionDict = {}
@@ -35,7 +36,7 @@ def select_action(state, valid_actions, cur_epoch):
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
             #print("NETWORK OUTPUT", policy_net(state))
-            network_output =  policy_net(state)
+            network_output = network(state)
             output_np = network_output.cpu().detach().numpy()[0]
 
             actionDict['UP'] = output_np[0]
@@ -56,6 +57,7 @@ def select_action(state, valid_actions, cur_epoch):
         # print("Taking random action")
         # pick a random action from the list of valid actions
         action_as_str = random.choice(valid_actions)
+        print(action_as_str)
     
     action_num = -1
     if action_as_str == 'UP':
@@ -72,6 +74,7 @@ def select_action(state, valid_actions, cur_epoch):
         # Throw error, invalid action
         print("Invalid action")
     action = torch.tensor([[action_num]], device=device, dtype=torch.long)
+    
     return action
 
 # Optimizer
@@ -201,7 +204,7 @@ if __name__ == "__main__":
         t = 0
         while not gameOver:
             valid_actions = game.gameState.getValidActions()
-            action_tensor = select_action(state, valid_actions, ep)
+            action_tensor = select_action(state, valid_actions, ep, policy_net)
             action_str = tensor_to_action(action_tensor)
             
             reward = game.getReward(action_str)
@@ -246,5 +249,5 @@ if __name__ == "__main__":
     print('Complete')
     
     if save_model:
-        print("Saving model")
         torch.save(target_net.state_dict(), f'DQN_{num_episodes}_epochs.pth')
+        print(f"Saved model to DQN_{num_episodes}_epochs.pth")

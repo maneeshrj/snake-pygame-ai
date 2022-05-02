@@ -75,7 +75,7 @@ if __name__ == "__main__":
         print('Testing', getAgentName(agentType))
         gameLengths, gameScores = [], []
         startTime = time.time()
-        screenNp, screenMat, screenNpStacked = None, None, None
+        # screenNp, screenMat, screenNpStacked = None, None, None
         agent = agentType()
         if isinstance(agent, DQNAgent):
             isDQN = True
@@ -113,6 +113,8 @@ if __name__ == "__main__":
                     break
                 step += 1
                 action = agent.getNextAction()
+                
+                #print(action)
                     
                 gameOver, score = env.playStep(action)
 
@@ -122,12 +124,12 @@ if __name__ == "__main__":
                             pygame.quit()
                             sys.exit()
 
-                    if step == 1 or step == 2:
+                    """if step == 1 or step == 2:
                         if screenNp is None:
                             screenNp = np.mean(env.getScreenAsNumpy(), axis=2)
                             screenMat = env.gameState.getAsMatrix()
                         else:
-                            screenNpStacked = np.dstack((screenNp, np.mean(env.getScreenAsNumpy(), axis=2)))
+                            screenNpStacked = np.dstack((screenNp, np.mean(env.getScreenAsNumpy(), axis=2)))"""
                 # print(is_over)
                 if gameOver:
                     if verbose:
@@ -154,9 +156,9 @@ if __name__ == "__main__":
         agent.stopEpisode()
     print()
     
-    if useGraphics:
+    # if useGraphics:
         ##matplotlib display image as greyscale
-        print(screenNpStacked.shape)
+        # print(screenNpStacked.shape)
         # print('Shape', screen_np.shape, ' min/max', np.min(screen_np), ' / ', np.max(screen_np))
         # fig, ax = plt.subplots(1,2)
         # ax[0].imshow(screenNpStacked[...,0], cmap='gray')

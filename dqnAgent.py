@@ -61,4 +61,4 @@ class DQNAgent:
             # state = torch.tensor(np.dstack((start_matrix, next_matrix)), device=device, dtype=torch.float)
             state = torch.tensor(start_matrix, device=device, dtype=torch.float).unsqueeze(-1)
             state = state.unsqueeze(0)
-            return select_action(state, self.gameState.getValidActions(), -1)
+            return tensor_to_action(select_action(state, self.gameState.getValidActions(), -1, self.net))
