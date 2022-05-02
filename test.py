@@ -80,7 +80,8 @@ if __name__ == "__main__":
         if isinstance(agent, DQNAgent):
             isDQN = True
             net = DQN((grid_height, grid_width, 1), 5)
-            net.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
+            net.load_state_dict(torch.load(model_path))
+            net.to(device)
             agent.loadNetwork(net)
 
         if isinstance(agent, QLearningAgent):
@@ -108,15 +109,17 @@ if __name__ == "__main__":
             action = 'CONTINUE'
             gameOver = False
             while not gameOver:
-                if step == 100:
-                    print("timeout reached")
-                    break
+            
                 step += 1
                 action = agent.getNextAction()
                 
                 #print(action)
                     
                 gameOver, score = env.playStep(action)
+                
+                if step >= 1000:
+                    print("timeout reached")
+                    gameOver = True
 
                 if useGraphics:
                     for event in pygame.event.get():
