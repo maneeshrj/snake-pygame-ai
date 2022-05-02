@@ -128,7 +128,7 @@ class GameState:
 		# otherwise default reward
         if step == 10000:
             self.timeout = True	# gameover if stuck in a loop
-        return -0.001
+        return -0.1
 
     def __hash__(self):
         """

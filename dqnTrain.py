@@ -152,9 +152,9 @@ if __name__ == "__main__":
     BATCH_SIZE = 128    # Originally 128
     GAMMA = 0.800
     EPS_START = 0.9
-    EPS_END = 0.05
+    EPS_END = 0.15
     # EPS_DECAY = 1000
-    EPS_DECAY = num_episodes // 2
+    EPS_DECAY = num_episodes // 4
     TARGET_UPDATE = 10
 
     grid_height = grid_width = 10
@@ -177,7 +177,7 @@ if __name__ == "__main__":
     run_data = []
     print("Starting Training")
     
-    intervalScores, epochTimes = [], []
+    intervalLosses, intervalScores, epochTimes = [], [], []
     for ep in range(1, num_episodes+1):
         start_time = time.time()
         
@@ -251,6 +251,7 @@ if __name__ == "__main__":
         game.gameOver()
         
         intervalScores.append(score)
+        intervalLosses.append(loss)
         epochTimes.append((time.time() - start_time))
         
         #episode_durations.append(t + 1)
@@ -263,10 +264,10 @@ if __name__ == "__main__":
             run_data.append([epochTimes[-1], score, curr_eps, loss])
             
         if ep % (num_episodes // 10) == 0:
-            epSummary = 'Epoch {:<3d}\tAvg score={:<3.2f}\tNonzero scores={:<3d}'.format(ep, np.mean(intervalScores), np.count_nonzero(intervalScores))
-            epSummary += '\teps={:<.2f}\t({:<.2f}s per ep)'.format(curr_eps, np.mean(epochTimes))
+            epSummary = '\nEpoch {:<3d}\tAvg_score={:<3.2f}\tNonzeros={:<3d} (max {:<3d})'.format(ep, np.mean(intervalScores), np.count_nonzero(intervalScores), max(intervalScores))
+            epSummary += '\nAvg_loss={:<.2f}\teps={:<.2f}\t({:<.2f} sec/ep)'.format(np.mean(intervalLosses), curr_eps, np.mean(epochTimes))
             # print('Scores:', intervalScores)
-            intervalScores, epochTimes = [], []
+            intervalScores, intervalLosses, epochTimes = [], [], []
             print(epSummary)
             
     

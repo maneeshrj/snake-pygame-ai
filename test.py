@@ -101,6 +101,7 @@ if __name__ == "__main__":
                 print('Loading default checkpoint file')
             agent.stopTraining()  # unnecessary, just to be safe
         
+        timeouts = 0
         for i in range(testRuns):
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=frameSizeX,
                                   frameSizeY=frameSizeY)
@@ -123,6 +124,7 @@ if __name__ == "__main__":
                 
                 if step >= 10000:
                     if verbose: print("timeout reached")
+                    timeouts += 1
                     gameOver = True
 
                 if useGraphics:
@@ -154,10 +156,11 @@ if __name__ == "__main__":
 
         print('-' * 40)
         print(testRuns, "test runs completed in", elapsedTime, "mins")
-        print("Average game:\t\t", avgGameLengths[-1], "timesteps")
-        print("Min/Max game length:\t", min(gameLengths), '/', max(gameLengths), "timesteps")
+        print("Average game len:\t", avgGameLengths[-1], "timesteps")
+        print("Min/Max game len:\t", min(gameLengths), '/', max(gameLengths), "timesteps")
         print("Average score:\t\t", avgGameScores[-1])
         print("Min/Max score:\t\t", min(gameScores), '/', max(gameScores))
+        print("Number of games timed out:", timeouts)
         print('=' * 40)
 
         agent.stopEpisode()
