@@ -24,7 +24,6 @@ def select_action(state, valid_actions, cur_epoch, network):
     if cur_epoch >= 0:
         eps_threshold = EPS_END + (EPS_START - EPS_END) * \
             math.exp(-1. * cur_epoch / EPS_DECAY)
-        print('training action')
     else:
         eps_threshold = 0.0
 
@@ -57,7 +56,7 @@ def select_action(state, valid_actions, cur_epoch, network):
         # print("Taking random action")
         # pick a random action from the list of valid actions
         action_as_str = random.choice(valid_actions)
-        print(action_as_str)
+        # print(action_as_str)
     
     action_num = -1
     if action_as_str == 'UP':
