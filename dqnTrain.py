@@ -18,6 +18,7 @@ from Snake import Game, GameState, Trial
 
 from dqn import DQN, ReplayMemory, tensor_to_action, Transition
 
+torch.cuda.empty_cache()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def select_action(state, valid_actions, cur_epoch, network):
@@ -144,13 +145,16 @@ if __name__ == "__main__":
 
     if torch.cuda.is_available():
         print(f"{torch.cuda.device_count()} GPU(s) available.")
+    else:
+        print('No GPUs available, using CPU.')
 
     # Training Setup
     BATCH_SIZE = 128    # Originally 128
     GAMMA = 0.800
     EPS_START = 0.9
     EPS_END = 0.05
-    EPS_DECAY = 200
+    # EPS_DECAY = 1000
+    EPS_DECAY = num_episodes // 2
     TARGET_UPDATE = 10
 
     grid_height = grid_width = 10
@@ -172,10 +176,11 @@ if __name__ == "__main__":
     moreThanZeroScores = []
     run_data = []
     print("Starting Training")
+    
+    intervalScores, epochTimes = [], []
     for ep in range(1, num_episodes+1):
         start_time = time.time()
-        if ep % (num_episodes // 10) == 0:
-            print('Epoch', ep)
+        
         # Initialize the environment and state
         gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT',
                             frameSizeX=100, frameSizeY=100)
@@ -245,24 +250,37 @@ if __name__ == "__main__":
         
         game.gameOver()
         
+        intervalScores.append(score)
+        epochTimes.append((time.time() - start_time))
+        
         #episode_durations.append(t + 1)
         if ep % TARGET_UPDATE == 0:
             target_net.load_state_dict(policy_net.state_dict())
-        
+            
+        curr_eps = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * ep / EPS_DECAY)
         # Time, score, eps
         if record_data:
-            run_data.append([time.time() - start_time, score, EPS_END + (EPS_START - EPS_END) * \
-                                                            math.exp(-1. * ep / EPS_DECAY), loss])
-    print('Complete')
+            run_data.append([epochTimes[-1], score, curr_eps, loss])
+            
+        if ep % (num_episodes // 10) == 0:
+            epSummary = 'Epoch {:<3d}\tAvg score={:<3.2f}\tNonzero scores={:<3d}'.format(ep, np.mean(intervalScores), np.count_nonzero(intervalScores))
+            epSummary += '\teps={:<.2f}\t({:<.2f}s per ep)'.format(curr_eps, np.mean(epochTimes))
+            # print('Scores:', intervalScores)
+            intervalScores, epochTimes = [], []
+            print(epSummary)
+            
+    
+    print('Training Complete')
     
     if save_model:
         torch.save(target_net.state_dict(), f'DQN_{num_episodes}_epochs.pth')
         print(f"Saved model to DQN_{num_episodes}_epochs.pth")
-
-    # Save the run data
-    with open('run_data.csv', 'w') as csvfile:
-        writer = csv.writer(csvfile)
-        # Write the header
-        writer.writerow(['time', 'score', 'eps', 'loss'])
-        writer.writerows(run_data)
-        print("Saved run data to run_data.csv")
+    
+    if record_data:
+        # Save the run data
+        with open('run_data.csv', 'w') as csvfile:
+            writer = csv.writer(csvfile)
+            # Write the header
+            writer.writerow(['time', 'score', 'eps', 'loss'])
+            writer.writerows(run_data)
+            print("Saved run data to run_data.csv")

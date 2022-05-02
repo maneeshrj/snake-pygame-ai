@@ -53,12 +53,12 @@ if __name__ == "__main__":
     grid_height = frameSizeY // 10
     grid_width = frameSizeX // 10
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model_path = args.load
 
     if readFromJson:
         with open('testSettings.json', "r") as settingsf:
             settings = json.load(settingsf)
             useGraphics = settings['useGraphics']
+            plain = settings['plain']
             testRuns = settings['testRuns']
             verbose = settings['verbose']
             (frameSizeX, frameSizeY) = WINDOW_SIZE_MAP[settings['screenSize']]
@@ -80,6 +80,10 @@ if __name__ == "__main__":
         if isinstance(agent, DQNAgent):
             isDQN = True
             net = DQN((grid_height, grid_width, 1), 5)
+            if readFromJson:
+                model_path = checkpoints['dqn']
+            else:
+                model_path = args.load
             net.load_state_dict(torch.load(model_path))
             net.to(device)
             agent.loadNetwork(net)
@@ -117,8 +121,8 @@ if __name__ == "__main__":
                     
                 gameOver, score = env.playStep(action)
                 
-                if step >= 1000:
-                    print("timeout reached")
+                if step >= 10000:
+                    if verbose: print("timeout reached")
                     gameOver = True
 
                 if useGraphics:

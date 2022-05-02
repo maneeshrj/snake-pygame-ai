@@ -1,13 +1,16 @@
 {
-  "useGraphics": true,
+  "useGraphics": false,
+  "plain": true,
   "testRuns": 40,
   "verbose": false,
   "screenSize": "small",
   "agents": [
-    "dqn"
+    "dqn",
+    "random"
   ],
   "checkpoints": {
       "exactq": "",
-      "approxq": "approxq_weights_3.pkl"
+      "approxq": "approxq_weights_3.pkl",
+      "dqn": "DQN_1000_epochs.pth"
   }
 }

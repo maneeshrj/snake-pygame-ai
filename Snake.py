@@ -120,15 +120,15 @@ class GameState:
         """
         nextState = self.getSuccessor(action)
 		# positive reward for eating food
-        if (nextState.reachedFood()):
-            return 100.0
+        if nextState.reachedFood():
+            return 25.0
 		# negative reward for dying
-        if (nextState.isGameOver()):
-            return -1000.0
+        if nextState.isGameOver():
+            return -10.0
 		# otherwise default reward
-		if step == 10000:
+        if step == 10000:
             self.timeout = True	# gameover if stuck in a loop
-        return -0.04
+        return -0.001
 
     def __hash__(self):
         """
