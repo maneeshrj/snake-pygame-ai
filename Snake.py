@@ -124,12 +124,12 @@ class GameState:
         nextState = self.getSuccessor(action)
         if (nextState.reachedFood()):
             # print('reward 1')
-            return 10.
+            return 1000.
         if (nextState.isGameOver()):
             # print('reward -1')
             return -100.
         # print('no reward\n')
-        return -0.04
+        return 0.00
 
     def __hash__(self):
         """
@@ -161,16 +161,19 @@ class GameState:
         and food position is represented by -1.
         """
         matrix = np.zeros((self.frameX // 10, self.frameY // 10))
-        for snakePos in self.pos:
+        for i, snakePos in enumerate(self.pos):
             snakeX = snakePos[0] // 10
             snakeY = snakePos[1] // 10
             # print(snakeX, snakeY)
             if snakeX >= 0 and snakeX < matrix.shape[0]:
                 if snakeY >= 0 and snakeY < matrix.shape[1]:
-                    matrix[snakeY, snakeX] = 1
+                    if i == 0:
+                        matrix[snakeY, snakeX] = 2
+                    else:
+                        matrix[snakeY, snakeX] = 1
         foodX = self.foodPos[0] // 10
         foodY = self.foodPos[1] // 10
-        matrix[foodY, foodX] = -1
+        matrix[foodY, foodX] = 3
         return matrix
     
     def __str__(self):

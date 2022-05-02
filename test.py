@@ -51,6 +51,7 @@ if __name__ == "__main__":
     isDQN = False
     grid_height = frameSizeY // 10
     grid_width = frameSizeX // 10
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     if readFromJson:
         with open('testSettings.json', "r") as settingsf:
@@ -77,7 +78,7 @@ if __name__ == "__main__":
         if isinstance(agent, DQNAgent):
             isDQN = True
             net = DQN((grid_height, grid_width, 2), 5)
-            net.load_state_dict(torch.load("DQN.pth"))
+            net.load_state_dict(torch.load("DQN.pth", map_location=torch.device(device)))
             agent.loadNetwork(net)
 
         if isinstance(agent, QLearningAgent):
