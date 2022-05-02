@@ -35,6 +35,7 @@ if __name__ == "__main__":
                         action="store_true", default=False)
     parser.add_argument("-j", "--json", help="Read from json file", action="store_true", default=False)
     parser.add_argument("-f", "--framerate", help="Set game speed", type=int, default=10)
+    parser.add_argument("-l", "--load", help="Load model", type=str, default=None)
 
     # Parse arguments and assign to variables
     args = parser.parse_args()
@@ -52,6 +53,7 @@ if __name__ == "__main__":
     grid_height = frameSizeY // 10
     grid_width = frameSizeX // 10
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model_path = args.load
 
     if readFromJson:
         with open('testSettings.json', "r") as settingsf:
@@ -78,7 +80,7 @@ if __name__ == "__main__":
         if isinstance(agent, DQNAgent):
             isDQN = True
             net = DQN((grid_height, grid_width, 1), 5)
-            net.load_state_dict(torch.load("DQN.pth", map_location=torch.device(device)))
+            net.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
             agent.loadNetwork(net)
 
         if isinstance(agent, QLearningAgent):
