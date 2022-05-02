@@ -77,7 +77,7 @@ if __name__ == "__main__":
         agent = agentType()
         if isinstance(agent, DQNAgent):
             isDQN = True
-            net = DQN((grid_height, grid_width, 2), 5)
+            net = DQN((grid_height, grid_width, 1), 5)
             net.load_state_dict(torch.load("DQN.pth", map_location=torch.device(device)))
             agent.loadNetwork(net)
 

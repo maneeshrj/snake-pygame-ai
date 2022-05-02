@@ -20,11 +20,13 @@ from dqn import DQN, ReplayMemory, tensor_to_action, Transition
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def select_action(state, valid_actions, cur_epoch):
-    global steps_done
     sample = random.random()
-    eps_threshold = EPS_END + (EPS_START - EPS_END) * \
-        math.exp(-1. * cur_epoch / EPS_DECAY)
-    steps_done += 1
+    if cur_epoch >= 0:
+        eps_threshold = EPS_END + (EPS_START - EPS_END) * \
+            math.exp(-1. * cur_epoch / EPS_DECAY)
+    else:
+        eps_threshold = 1.0
+
     action_as_str = None
     actionDict = {}
     if sample > eps_threshold:
@@ -125,7 +127,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--episodes', type=int, default=100, help='number of episodes to train for')
-    parser.add_argument('-g', 'graphics', action='store_true', help='show graphics')
+    parser.add_argument('-g', '--graphics', action='store_true', help='show graphics')
 
     args = parser.parse_args()
     num_episodes = args.episodes
@@ -155,7 +157,7 @@ if __name__ == "__main__":
     optimizer = optim.RMSprop(policy_net.parameters())
     memory = ReplayMemory(10000)
 
-    steps_done = 0
+    # steps_done = 0
 
     learningTrial = Trial()
     moreThanZeroScores = []
