@@ -11,7 +11,7 @@ import torchvision.transforms as T
 import math
 import time
 import argparse
-import csv
+import csv, json
 
 from itertools import count
 from Snake import Game, GameState, Trial
@@ -173,7 +173,8 @@ if __name__ == "__main__":
     # steps_done = 0
 
     learningTrial = Trial()
-    moreThanZeroScores = []
+    stats = dict()
+    stats['lengths'], stats['scores'], stats['times'] = [], [], []
     run_data = []
     print("Starting Training")
     
@@ -252,7 +253,7 @@ if __name__ == "__main__":
         
         intervalScores.append(score)
         intervalLengths.append(t)
-        epochTimes.append((time.time() - start_time))
+        epochTimes.append(round(time.time()-start_time, 4))
         
         #episode_durations.append(t + 1)
         if ep % TARGET_UPDATE == 0:
@@ -267,6 +268,10 @@ if __name__ == "__main__":
             epSummary = '\nEpoch {:<3d}\tAvg_score={:<3.2f}\tNonzeros={:d}\tMax={:<3d}'.format(ep, np.mean(intervalScores), np.count_nonzero(intervalScores), max(intervalScores))
             epSummary += '\nAvg_len={:<.2f}\tMax_len={:<4d}\teps={:<.2f}\t({:<.2f} sec/ep)'.format(np.mean(intervalLengths),max(intervalLengths),curr_eps, np.mean(epochTimes))
             # print('Scores:', intervalScores)
+            stats['scores'] += intervalScores
+            stats['lengths'] += intervalLengths
+            stats['times'] += epochTimes
+            
             intervalScores, intervalLengths, epochTimes = [], [], []
             print(epSummary)
             
@@ -285,3 +290,6 @@ if __name__ == "__main__":
             writer.writerow(['time', 'score', 'eps', 'loss'])
             writer.writerows(run_data)
             print("Saved run data to run_data.csv")
+        
+    with open(f"dqn_{num_episodes}_stats.json", "w") as f:
+        f.write(json.dumps(stats))
