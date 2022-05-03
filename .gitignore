@@ -167,3 +167,6 @@ cython_debug/
 .idea
 *.pth
 *.csv
+
+# The directory where dqn models are saved
+models/
