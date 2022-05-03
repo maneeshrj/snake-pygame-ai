@@ -7,6 +7,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.evaluation import evaluate_policy
 import time
 import argparse
+import cv2
 
 class CustomSnakeEnv(gym.Env):
     """
@@ -29,8 +30,12 @@ class CustomSnakeEnv(gym.Env):
         self.snake_full_pos = [[2, 4], [2, 3], [2, 2]]
         self.snake_head = self.snake_full_pos[0].copy()
         self.snake_direction = "EAST"
-        self.food_pos = [[4, 4]]
+        self.n_food = n_food
+        self.food_pos = []
+        for i in range(self.n_food):
+            self.add_food()
         self.set_grid()
+        self.canvas = np.ones((height*10, width*10, 3), dtype=np.uint8) # 0 - 255
         
         self.LEFT = 0
         self.RIGHT = 1
@@ -57,6 +62,22 @@ class CustomSnakeEnv(gym.Env):
             self.grid[pos[0], pos[1]] = 1
         for pos in self.food_pos:
             self.grid[pos[0], pos[1]] = 2
+
+    def draw_grid_on_canvas(self):
+        """
+        Draw the grid on the canvas
+        """
+        for i in range(self.grid_size[0]):
+            for j in range(self.grid_size[1]):
+                if self.grid[i, j] == 0:
+                    self.canvas[i*10:(i+1)*10, j*10:(j+1)*10] = [0, 0, 0] # black
+                elif self.grid[i, j] == 1:
+                    if self.snake_head == [i, j]:
+                        self.canvas[i*10:(i+1)*10, j*10:(j+1)*10] = [0, 200, 0] # light green
+                    else:
+                        self.canvas[i*10:(i+1)*10, j*10:(j+1)*10] = [0, 255, 0] # green
+                elif self.grid[i, j] == 2:
+                    self.canvas[i*10:(i+1)*10, j*10:(j+1)*10] = [0, 0, 255] # red
     
     def add_food(self):
         """
@@ -64,8 +85,8 @@ class CustomSnakeEnv(gym.Env):
         """
         food_loc = [np.random.randint(0, self.grid_size[0]), np.random.randint(0, self.grid_size[1])]
 
-        # Make sure the food is not in the snake
-        while food_loc in self.snake_full_pos:
+        # Make sure the food is not in the snake or in another food
+        while food_loc in self.snake_full_pos or food_loc in self.food_pos:
             food_loc = [np.random.randint(0, self.grid_size[0]), np.random.randint(0, self.grid_size[1])]
         
         self.food_pos.append(food_loc)
@@ -82,12 +103,15 @@ class CustomSnakeEnv(gym.Env):
         self.snake_full_pos = [[2, 4], [2, 3], [2, 2]]
         self.snake_head = self.snake_full_pos[0].copy()
         self.snake_direction = "EAST"
-        self.food_pos = [[4, 4]]
+        self.food_pos = []
+        for i in range(self.n_food):
+            self.add_food()
         self.score = 0
         self.steps = 0
         self.num_episodes += 1
         self.timed_out = False
         self.set_grid()
+        self.draw_grid_on_canvas()
         return np.array(self.grid).astype(np.float32).flatten()
 
     def get_snake_direction(self):
@@ -190,11 +214,12 @@ class CustomSnakeEnv(gym.Env):
         reached_food, done = self.move_snake(action)
         reward = -1
         if done:
-            reward = -15.0
+            reward = -5
         else:
             if reached_food:
-                reward = 10.0
+                reward = 10
             self.set_grid()
+            self.draw_grid_on_canvas()
 
         # normalize the reward to be between -1 and 1
         
@@ -224,7 +249,8 @@ class CustomSnakeEnv(gym.Env):
         if mode == 'console':
             print(self.grid)
         elif mode == 'human':
-            pass
+            cv2.imshow("Snake", self.canvas)
+            cv2.waitKey(200)
         else:
             print("ERROR: Invalid render mode")
 
@@ -254,7 +280,9 @@ if __name__ == "__main__":
     parser.add_argument('-dqn', '--dqn', action='store_true', help='Run the environment in DQN mode')
     parser.add_argument('-ppo', '--ppo', action='store_true', help='Run the environment in PPO mode')
     parser.add_argument('-a2c', '--a2c', action='store_true', help='Run the environment in A2C mode')
-
+    parser.add_argument('-g', '--graphics_mode', type=str, choices=['console', 'human'], default='console', help='Graphics mode')
+    parser.add_argument('-f', '--num_food', type=int, default=1, help='Number of food items to spawn')
+    
     args = parser.parse_args()
     random_mode = args.random
     num_episodes = args.num_episodes
@@ -262,68 +290,71 @@ if __name__ == "__main__":
     use_dqn = args.dqn
     use_ppo = args.ppo
     use_a2c = args.a2c
+    graphics_mode = args.graphics_mode
+    num_food = args.num_food
     if [use_dqn, random_mode, use_ppo, use_a2c].count(True) > 1:
         raise ValueError("Cannot run in multiple modes at the same time")
 
-    env = CustomSnakeEnv(height=grid_size, width=grid_size, n_food=1)
+    env = CustomSnakeEnv(height=grid_size, width=grid_size, n_food=num_food)
     # Add a time limit to the environment
 
     env = make_vec_env(lambda: env, n_envs=1)
     obs = env.reset()
     if random_mode:
-        env.render("console")
+        env.render(graphics_mode)
         for _ in range(num_episodes):
             action = env.action_space.sample()
             print("Action: ", action_num_to_str(action))
             obs, reward, done, info = env.step([action])
-            env.render("console")
-            time.sleep(0.5)
+            env.render(graphics_mode)
             if done:
                 print("Score: ", info[0]["score"])
                 obs = env.reset()
-    elif use_dqn:
-        model = DQN(policy="MlpPolicy", env=env)
-        model.learn(total_timesteps=int(num_episodes))
-        mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=100)
-        print("Mean Reward:", mean_reward, "Std Reward:", std_reward)
-    elif use_ppo:
-        model = PPO(policy="MlpPolicy", env=env)
-        model.learn(total_timesteps=int(num_episodes))
-        mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=100)
-        print("Mean Reward:", mean_reward, "Std Reward:", std_reward)
-    elif use_a2c:
-        model = A2C(policy="MlpPolicy", env=env)
-        model.learn(total_timesteps=int(num_episodes))
-        mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=100)
-        print("Mean Reward:", mean_reward, "Std Reward:", std_reward)
+    else:
+        if use_dqn:
+            model = DQN(policy="MlpPolicy", env=env)
+            model.learn(total_timesteps=int(num_episodes))
+            mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=100)
+            print("Mean Reward:", mean_reward, "Std Reward:", std_reward)
+        elif use_ppo:
+            model = PPO(policy="MlpPolicy", env=env)
+            model.learn(total_timesteps=int(num_episodes))
+            mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=100)
+            print("Mean Reward:", mean_reward, "Std Reward:", std_reward)
+        elif use_a2c:
+            model = A2C(policy="MlpPolicy", env=env)
+            model.learn(total_timesteps=int(num_episodes))
+            mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=100)
+            print("Mean Reward:", mean_reward, "Std Reward:", std_reward)
     
-    obs = env.reset()
+        obs = env.reset()
 
-    eval_runs = 100
-    scores = []
-    steps = []
+        eval_runs = 100
+        scores = []
+        steps = []
 
-    for i in range(eval_runs):
-        render = False
-        done = False
-        step = 0
-        # if i multiple of 1/10th the number of eval runs
-        """if i % (eval_runs/10) == 0:
-            render = True
-            print("-" * 40)"""
-        while not done:
-            step += 1
-            action, _states = model.predict(obs, deterministic=True)
-            obs, rewards, [done], info = env.step(action)
-            score = info[0]["score"]
-            if render:
-                env.render("console")
-        scores.append(score)
-        steps.append(step)
-    
-    print("Average Eval Score:", np.mean(scores))
-    print("Average Eval Steps:", np.mean(steps))
-    print(f"Total Timeout Percentage: {round(info[0]['num_timeouts']*100/(info[0]['num_episodes']), 3)}%")
+        for i in range(eval_runs):
+            render = False
+            done = False
+            step = 0
+            # if i multiple of 1/10th the number of eval runs
+            if i % (eval_runs/10) == 0:
+                render = True
+                print("rendering")
+                env.render(graphics_mode)
+            while not done:
+                step += 1
+                action, _states = model.predict(obs, deterministic=True)
+                obs, rewards, [done], info = env.step(action)
+                score = info[0]["score"]
+                if render:
+                    env.render(graphics_mode)
+            scores.append(score)
+            steps.append(step)
+        
+        print("Average Eval Score:", np.mean(scores))
+        print("Average Eval Steps:", np.mean(steps))
+        print(f"Total Timeout Percentage: {round(info[0]['num_timeouts']*100/(info[0]['num_episodes']), 3)}%")
 
 
 

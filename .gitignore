@@ -170,3 +170,6 @@ cython_debug/
 
 # The directory where dqn models are saved
 models/
+
+# Log directories
+tensorboard_log/
