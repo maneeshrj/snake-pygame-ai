@@ -1,5 +1,6 @@
 import pygame, sys, time, random, copy, util
 import numpy as np
+from util import distance
 
 # Defalut colors for graphics
 COLORS = {
@@ -128,7 +129,7 @@ class GameState:
 		# otherwise default reward
         if step == 1000:
             self.timeout = True	# gameover if stuck in a loop
-        return -0.1
+        return -0.001*distance(self.pos[0], self.foodPos)
 
     def __hash__(self):
         """
@@ -230,7 +231,7 @@ class Game:
         self.framerate = framerate
         self.first_step = True
         self.plain = plain
-        self.foodPosList = foodPosList
+        self.foodPosList = copy.deepcopy(foodPosList)
 
         # Generate a random food position from a set food list
         if randomFood:
@@ -246,6 +247,8 @@ class Game:
                     for j in range((self.frameY//10)):
                         self.foodPosList.append([i*10, j*10])
                 rng.shuffle(self.foodPosList)
+            # self.foodPosList = self.foodPosList[0:5]
+        # print(self.foodPosList, '\n')
         
         # Have to set food pos outside of init otherwise we pop the first element
         # before we have a chance to set the foodPosList in the trial

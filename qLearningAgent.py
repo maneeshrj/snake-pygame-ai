@@ -1,9 +1,9 @@
 import sys, random
 import pickle
-from util import Counter, updatePosition, manhattanDistance, distance
-import numpy as np
-# import featureExtractors as feat
-
+from util import Counter, updatePosition, distance
+'''
+Code is based on homework from CS:4420 Artificial Intelligence at UIowa, taught by Prof. Bijaya Adhikari.
+'''
 
 ### EXACT Q LEARNING AGENT
 class QLearningAgent:
@@ -56,7 +56,6 @@ class QLearningAgent:
             maxQ = float("-inf")
             bestActions = []
             for action in legalActions:
-                # print('Calling getQValue from computeActionFromQValues')
                 q = self.getQValue(state, action)
                 if q > maxQ:
                     maxQ = q
@@ -64,7 +63,6 @@ class QLearningAgent:
                 elif q == maxQ:
                     bestActions.append(action)
             chosenAction = random.choice(bestActions)
-            # print(f"Picking a policy action {chosenAction} with a Q value of {maxQ}")
             return chosenAction
 
     def computeValueFromQValues(self, state):
@@ -94,8 +92,6 @@ class QLearningAgent:
         """
         state = self.gameState
         legalActions = state.getValidActions()
-        
-        # print('In getNextAction, LEGAL ACTIONS=',legalActions, 'w/ current direction=', state.direction)
         action = None
         if len(legalActions) == 0:
             return None
@@ -105,10 +101,8 @@ class QLearningAgent:
             else:
                 if random.random() < self.epsilon:
                     action = random.choice(legalActions)
-                    # print(f"In getNextAction, picking a random action {action}")
                 else:
                     action = self.getPolicy(state)
-                    # print(f"In getNextAction, picking a policy action {action}")
         self.step += 1
         self.observeTransition(state, action, state.getSuccessor(action), state.getReward(action, self.step))
         return action
@@ -173,7 +167,7 @@ class QLearningAgent:
 
 
 ### APPROX Q LEARNING FEATURE EXTRACTORS
-def getFeatures(state, action, extractor=1):
+def getFeatures(state, action):
     features = Counter()
     features["bias"] = 1.0
 
@@ -181,102 +175,53 @@ def getFeatures(state, action, extractor=1):
     curPos = state.getSnakePos()
     curHead = curPos[0]
     nextHead = updatePosition(curHead, action)
-    foodPos = state.getFoodPos()
-    
+    foodPos = state.getFoodPos()    
     frameX, frameY = (state.frameX//10), (state.frameY//10)
     
     # get distance to food as a number between 0 and 1
     nextFoodDist = distance(nextHead, foodPos) / (frameX * frameY)
-    currFoodDist = distance(curHead, foodPos) / (frameX * frameY)
-    # features['foodDist'] = nextFoodDist - currFoodDist
     features['foodDist'] = nextFoodDist
 
-    if extractor == 1:
-        # Get the next state as a matrix
-        nextState = state.getSuccessor(action)
-        nextMat = nextState.getAsMatrix()
-        nextX, nextY = nextHead[0]//10, nextHead[1]//10
-        direction =  nextState.direction
-        
-        minDistToBody = float("inf")
-        for bodyElem in curPos[1:]:
-            distToBody = distance(nextHead, bodyElem)
-            if distToBody < minDistToBody:
-                minDistToBody = distToBody
-        
-        features['minDistToBody'] = (minDistToBody / (frameX * frameY))
-        
-        foodX, foodY = foodPos[0]//10, foodPos[1]//10
-        features['bodyObstacle'] = 0.
-        features['bodyObstacle2'] = 0.
-        if foodX == nextX:
-            if direction == 'UP':# and foodY < nextY:
-                for i in range(0,nextY):
-                    if nextMat[i, nextX] > 0:
-                        features['bodyObstacle'] = 1.0
-                        
-            if direction == 'DOWN':# and foodY > nextY:
-                for i in range(nextY+1, frameY):
-                    if nextMat[i, nextX] > 0:
-                        features['bodyObstacle'] = 1.0
-        elif foodY == nextY:
-            if direction == 'LEFT':# and foodX < nextX:
-                for i in range(0,nextX):
-                    if nextMat[nextY, i] > 0:
-                        features['bodyObstacle'] = 1.0
-            if direction == 'RIGHT':# and foodX > nextX:
-                for i in range(nextX+1, frameX):
-                    if nextMat[nextY, i] > 0:
-                        features['bodyObstacle'] = 1.0
-        
-        # centerX, centerY = (frameX)/2, (frameY)/2
-        # features['distToCenter'] = distance(nextHead,[centerX, centerY]) / (frameX*frameY)
-        
-        # features['distToWall'] = 0
-        # if(direction == 'RIGHT'):
-        #     features['distToWall']  = abs(frameX - nextX)/(frameX*frameY)
-        # if(direction == 'LEFT'):
-        #     features['distToWall']  = (nextX+1)/(frameX*frameY)
-        # if(direction == 'UP'):
-        #     features['distToWall']  = abs(frameY - nextY)/(frameX*frameY)
-        # if(direction == 'DOWN'):
-        #     features['distToWall']  = (nextY+1)/(frameX*frameY)
-        
-        # print("*" * 40)
-        # print('Trying action', action)
-        # print("NEXT MATRIX:\n", nextMat)
-        # print("NEXT STATE: ", nextState)
-        # print("*" * 40)
-
-        # 
-        # matrix = state.getAsMatrix()
-        # # print(headX, headY)
-        # # the snake looks in the direction of the action 
-        # nextDirection = action
-        # if action == 'CONTINUE':
-        #     nextDirection = state.direction
-            
-        # if nextX < 0: features["outOfBoundsL"] = 1.
-        # else: features["outOfBoundsL"] = 0.
-        
-        # if nextY < 0: features["outOfBoundsU"] = 1.
-        # else: features["outOfBoundsU"] = 0.
-        
-        # if nextX >= matrix.shape[0]: features["outOfBoundsR"] = 1.
-        # else: features["outOfBoundsR"] = 0.
-        
-        # if nextY >= matrix.shape[1]: features["outOfBoundsD"] = 1.
-        # else: features["outOfBoundsD"] = 0.
-
-        # the min distance to an obstacle in the direction of the action
-        # the min distance to an obstacle to the left of the action
-        # the min distance to an obstacle to the right of the action
-        # an obstacle is the snakes body or the wall
-        # TODO: Implement this!
+    # Get the next state as a matrix
+    nextState = state.getSuccessor(action)
+    nextMat = nextState.getAsMatrix()
+    nextX, nextY = nextHead[0]//10, nextHead[1]//10
+    direction =  nextState.direction
+    
+    minDistToBody = float("inf")
+    for bodyElem in curPos[1:]:
+        distToBody = distance(nextHead, bodyElem)
+        if distToBody < minDistToBody:
+            minDistToBody = distToBody
+    
+    features['minDistToBody'] = (minDistToBody / (frameX * frameY))
+    
+    foodX, foodY = foodPos[0]//10, foodPos[1]//10
+    features['bodyObstacle'] = 0.
+    if foodX == nextX:
+        if direction == 'UP':# and foodY < nextY:
+            for i in range(0,nextY):
+                if nextMat[i, nextX] > 0:
+                    features['bodyObstacle'] = 1.0
+                    
+        if direction == 'DOWN':# and foodY > nextY:
+            for i in range(nextY+1, frameY):
+                if nextMat[i, nextX] > 0:
+                    features['bodyObstacle'] = 1.0
+    elif foodY == nextY:
+        if direction == 'LEFT':# and foodX < nextX:
+            for i in range(0,nextX):
+                if nextMat[nextY, i] > 0:
+                    features['bodyObstacle'] = 1.0
+        if direction == 'RIGHT':# and foodX > nextX:
+            for i in range(nextX+1, frameX):
+                if nextMat[nextY, i] > 0:
+                    features['bodyObstacle'] = 1.0
 
     features.divideAll(10.0)
     return features
 
+### APPROX Q AGENT
 class ApproxQAgent(QLearningAgent):
     def __init__(self, **args):
         QLearningAgent.__init__(self, **args)
@@ -295,7 +240,6 @@ class ApproxQAgent(QLearningAgent):
         """
         # Given a state, action pair, return the Q value
         # Use the weights to compute the Q value
-        # print("Calling getQValue on", state,'+',action)
         features = getFeatures(state, action)
         q_value = 0
         for feature in features:
@@ -305,7 +249,6 @@ class ApproxQAgent(QLearningAgent):
     
     def update(self, state, action, nextState, reward):
         difference = ((reward) + (self.discount * self.getValue(nextState))) - (self.getQValue(state, action))
-        # print("Called Inside Update for", state, '+', action)
         for feature, value in getFeatures(state, action).items():
           self.weights[feature] = (self.weights[feature]) + (self.alpha * difference * value)
     
@@ -320,11 +263,6 @@ class ApproxQAgent(QLearningAgent):
             
     def saveCheckpoint(self, fname='approxq_weights.pkl'):
         weightsDict = self.weights.asDict()
-        # print('Weights dictionary size:', sys.getsizeof(weightsDict), 'bytes')
-        # print('Number of weights saved:', len(weightsDict))
         with open(fname, 'wb') as f:
             print('Saving weights: ', weightsDict)
             pickle.dump(weightsDict, f, protocol=pickle.HIGHEST_PROTOCOL)
-        # with open(fname, 'rb') as f:
-        #     counts = pickle.load(f)
-        #     print('Length of qval dict saved:', len(counts))

@@ -9,9 +9,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torchvision.transforms as T
 import math
-import time
+import time, datetime
 import argparse
-import csv
+import csv, json
 
 from itertools import count
 from Snake import Game, GameState, Trial
@@ -135,6 +135,7 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--save', action='store_true', help='save model')
     parser.add_argument('-r', '--random_food', action='store_true', help='random food')
     parser.add_argument('-d', '--record_data', action='store_true', help='record run data')
+    parser.add_argument('-l', '--load', action='store_true', help='load saved model')
 
     args = parser.parse_args()
     num_episodes = args.episodes
@@ -147,15 +148,22 @@ if __name__ == "__main__":
         print(f"{torch.cuda.device_count()} GPU(s) available.")
     else:
         print('No GPUs available, using CPU.')
-
+    
+    stats = dict()
     # Training Setup
     BATCH_SIZE = 128    # Originally 128
-    GAMMA = 0.800
+    GAMMA = 0.8
     EPS_START = 0.9
-    EPS_END = 0.15
-    # EPS_DECAY = 1000
-    EPS_DECAY = num_episodes // 4
+    EPS_END = 0.05
+    EPS_DECAY = 200
+    # EPS_DECAY = num_episodes // 4
     TARGET_UPDATE = 10
+    
+    stats['BATCH_SIZE'], stats['GAMMA'], stats['EPS_START'], stats['EPS_END'], stats['EPS_DECAY'], stats['TARGET_UPDATE'] = \
+        BATCH_SIZE, GAMMA, EPS_START, EPS_END, EPS_DECAY, TARGET_UPDATE
+    
+    # Restore weights from this path
+    model_path = 'DQN_50000_epochs.pth'
 
     grid_height = grid_width = 10
 
@@ -164,6 +172,11 @@ if __name__ == "__main__":
 
     policy_net = DQN((grid_height, grid_width, 1), n_actions).to(device)
     target_net = DQN((grid_height, grid_width, 1), n_actions).to(device)
+    
+    if args.load:
+        policy_net.load_state_dict(torch.load(model_path, map_location=device))
+        print('Resuming training from', model_path)
+    
     target_net.load_state_dict(policy_net.state_dict())
     target_net.eval()
 
@@ -173,11 +186,11 @@ if __name__ == "__main__":
     # steps_done = 0
 
     learningTrial = Trial()
-    moreThanZeroScores = []
+    stats['lengths'], stats['scores'], stats['times'] = [], [], []
     run_data = []
     print("Starting Training")
     
-    intervalLosses, intervalScores, epochTimes = [], [], []
+    intervalLengths, intervalScores, epochTimes = [], [], []
     for ep in range(1, num_episodes+1):
         start_time = time.time()
         
@@ -251,8 +264,8 @@ if __name__ == "__main__":
         game.gameOver()
         
         intervalScores.append(score)
-        intervalLosses.append(loss)
-        epochTimes.append((time.time() - start_time))
+        intervalLengths.append(t)
+        epochTimes.append(round(time.time()-start_time, 4))
         
         #episode_durations.append(t + 1)
         if ep % TARGET_UPDATE == 0:
@@ -263,19 +276,28 @@ if __name__ == "__main__":
         if record_data:
             run_data.append([epochTimes[-1], score, curr_eps, loss])
             
-        if ep % (num_episodes // 10) == 0:
+        if ep % (num_episodes // 10) == 0 or ep == 1:
             epSummary = '\nEpoch {:<3d}\tAvg_score={:<3.2f}\tNonzeros={:d}\tMax={:<3d}'.format(ep, np.mean(intervalScores), np.count_nonzero(intervalScores), max(intervalScores))
-            epSummary += '\nAvg_loss={:<.2f}\teps={:<.2f}\t({:<.2f} sec/ep)'.format(np.mean(np.where(intervalLosses != None)),curr_eps, np.mean(epochTimes))
+            epSummary += '\nAvg_len={:<.2f}\tMax_len={:<4d}\teps={:<.2f}\t({:<.2f} sec/ep)'.format(np.mean(intervalLengths),max(intervalLengths),curr_eps, np.mean(epochTimes))
             # print('Scores:', intervalScores)
-            intervalScores, intervalLosses, epochTimes = [], [], []
+            stats['scores'] += intervalScores
+            stats['lengths'] += intervalLengths
+            stats['times'] += epochTimes
+            
+            intervalScores, intervalLengths, epochTimes = [], [], []
             print(epSummary)
             
     
     print('Training Complete')
     
-    if save_model:
-        torch.save(target_net.state_dict(), f'DQN_{num_episodes}_epochs.pth')
-        print(f"Saved model to DQN_{num_episodes}_epochs.pth")
+    date = datetime.datetime.now()
+    model_name = f"models/dqn_{num_episodes}ep_{date.strftime('%d%b_%H%M')}"
+    if save_model:        
+        torch.save(target_net.state_dict(), f"{model_name}.pth")
+        print(f"Saved model to {model_name}.pth")
+        
+        with open(f"{model_name}_stats.json", "w") as f:
+            f.write(json.dumps(stats))
     
     if record_data:
         # Save the run data

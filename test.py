@@ -11,7 +11,10 @@ from Snake import Game, GameState, Trial
 from agents import AGENT_MAP, getAgentName
 from qLearningAgent import QLearningAgent
 from dqnAgent import DQNAgent
-from dqn import DQN, tensor_to_action
+from dqn import DQN
+
+torch.cuda.empty_cache()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 WINDOW_SIZE_MAP = {
     'small': (100, 100),
@@ -36,6 +39,7 @@ if __name__ == "__main__":
     parser.add_argument("-j", "--json", help="Read from json file", action="store_true", default=False)
     parser.add_argument("-f", "--framerate", help="Set game speed", type=int, default=10)
     parser.add_argument("-l", "--load", help="Load model", type=str, default=None)
+    parser.add_argument("-r", "--random_food", help="Random food spawn", action="store_true", default=False)
 
     # Parse arguments and assign to variables
     args = parser.parse_args()
@@ -52,7 +56,7 @@ if __name__ == "__main__":
     isDQN = False
     grid_height = frameSizeY // 10
     grid_width = frameSizeX // 10
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    randomFood = args.random_food
 
     if readFromJson:
         with open('testSettings.json', "r") as settingsf:
@@ -65,6 +69,8 @@ if __name__ == "__main__":
             agentNames = settings['agents']
             agents = [AGENT_MAP[agent] for agent in agentNames]
             checkpoints = settings['checkpoints']
+            randomFood = settings['randomFood']
+            # print(randomFood)
 
     avgGameLengths, avgGameScores = [], []
 
@@ -84,7 +90,7 @@ if __name__ == "__main__":
                 model_path = checkpoints['dqn']
             else:
                 model_path = args.load
-            net.load_state_dict(torch.load(model_path))
+            net.load_state_dict(torch.load(model_path, map_location=device))
             net.to(device)
             agent.loadNetwork(net)
 
@@ -105,7 +111,7 @@ if __name__ == "__main__":
         for i in range(testRuns):
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=frameSizeX,
                                   frameSizeY=frameSizeY)
-            env = Game(gameState, graphics=useGraphics, plain=plain, framerate=framerate, randomFood=True)
+            env = Game(gameState, graphics=useGraphics, plain=plain, framerate=framerate, randomFood=randomFood)
             env.setFoodPos()
             
             agent.startEpisode(gameState)
@@ -122,7 +128,7 @@ if __name__ == "__main__":
                     
                 gameOver, score = env.playStep(action)
                 
-                if step >= 10000:
+                if step >= 1000:
                     if verbose: print("timeout reached")
                     timeouts += 1
                     gameOver = True

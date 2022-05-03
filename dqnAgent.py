@@ -54,7 +54,6 @@ class DQNAgent:
             # t.max(1) will return largest column value of each row.
             # second column on max result is index of where max element was
             # found, so we pick action with the larger expected reward.
-            #print("NETWORK OUTPUT", policy_net(state))
 
             start_matrix = self.gameState.getAsMatrix()
             # next_matrix = self.gameState.getSuccessor('CONTINUE').getAsMatrix()
