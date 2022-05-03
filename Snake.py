@@ -230,7 +230,7 @@ class Game:
         self.framerate = framerate
         self.first_step = True
         self.plain = plain
-        self.foodPosList = foodPosList
+        self.foodPosList = copy.deepcopy(foodPosList)
 
         # Generate a random food position from a set food list
         if randomFood:

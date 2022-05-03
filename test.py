@@ -11,7 +11,10 @@ from Snake import Game, GameState, Trial
 from agents import AGENT_MAP, getAgentName
 from qLearningAgent import QLearningAgent
 from dqnAgent import DQNAgent
-from dqn import DQN, tensor_to_action
+from dqn import DQN
+
+torch.cuda.empty_cache()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 WINDOW_SIZE_MAP = {
     'small': (100, 100),
@@ -53,7 +56,6 @@ if __name__ == "__main__":
     isDQN = False
     grid_height = frameSizeY // 10
     grid_width = frameSizeX // 10
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     randomFood = args.random_food
 
     if readFromJson:
@@ -88,7 +90,7 @@ if __name__ == "__main__":
                 model_path = checkpoints['dqn']
             else:
                 model_path = args.load
-            net.load_state_dict(torch.load(model_path))
+            net.load_state_dict(torch.load(model_path, map_location=device))
             net.to(device)
             agent.loadNetwork(net)
 

@@ -27,7 +27,6 @@ def tensor_to_action(tensor):
     elif action_num == 4:
         return "CONTINUE"
 
-#%% DQN Model Setup
 # Represents a transition from one state to another
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
@@ -64,19 +63,11 @@ class DQN(nn.Module):
     def forward(self, x):
         x = x.to(device)
         x = b2f(x)#.unsqueeze(0)
-        # print('1',x.shape)
         x = F.relu(self.conv1(x))
-        # print('2',x.shape)
         x = F.relu(self.conv2(x))
-        # print('3',x.shape)
         x = F.relu(self.conv3(x))
-        # print('4',x.shape)
         x = x.contiguous()
         x = x.view(x.size(0), -1)
-        # print('5',x.shape)
         x = F.relu(self.fc1(x.view(x.size(0), -1)))
-        # print('6',x.shape)
         x = self.fc2(x)
-        # print('7',x.shape)
-        # print()
         return x

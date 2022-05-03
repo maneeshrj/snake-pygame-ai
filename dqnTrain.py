@@ -151,9 +151,9 @@ if __name__ == "__main__":
     # Training Setup
     BATCH_SIZE = 128    # Originally 128
     GAMMA = 0.8
-    EPS_START = 0.9
+    EPS_START = 0.90
     EPS_END = 0.05
-    EPS_DECAY = 2000
+    EPS_DECAY = 200
     # EPS_DECAY = num_episodes // 2
     TARGET_UPDATE = 10
 
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     target_net.eval()
 
     optimizer = optim.RMSprop(policy_net.parameters())
-    memory = ReplayMemory(10000)
+    memory = ReplayMemory(20000)
 
     # steps_done = 0
 
@@ -192,7 +192,7 @@ if __name__ == "__main__":
             if ep % (num_episodes // 5) == 0:
                 trainGraphics = True
         
-        if random_food and (ep > num_episodes//2):
+        if random_food:
             game = Game(gameState, graphics=trainGraphics, plain=True, randomFood=True, framerate=5)
         else:
             game = Game(gameState, graphics=trainGraphics, plain=True, 
@@ -205,9 +205,9 @@ if __name__ == "__main__":
 
         # The state is the game frame stacked on top of the next state frame
         start_matrix = game.getCurrentState().getAsMatrix()
-        # next_matrix = game.getNextState("CONTINUE").getAsMatrix()
-        # state = torch.tensor(np.dstack((start_matrix, next_matrix)), dtype=torch.float)
-        state = torch.tensor(start_matrix, dtype=torch.float).unsqueeze(-1)
+        next_matrix = game.getNextState("CONTINUE").getAsMatrix()
+        state = torch.tensor(np.dstack((start_matrix, next_matrix)), dtype=torch.float)
+        # state = torch.tensor(start_matrix, dtype=torch.float).unsqueeze(-1)
         state = state.unsqueeze(0)
 
         t = 0
@@ -261,7 +261,7 @@ if __name__ == "__main__":
         curr_eps = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * ep / EPS_DECAY)
         # Time, score, eps
         if record_data:
-            run_data.append([round(epochTimes[-1],3), score, round(curr_eps,2), round(loss,4)])
+            run_data.append([epochTimes[-1], score, curr_eps, loss])
             
         if ep % (num_episodes // 10) == 0:
             epSummary = '\nEpoch {:<3d}\tAvg_score={:<3.2f}\tNonzeros={:d}\tMax={:<3d}'.format(ep, np.mean(intervalScores), np.count_nonzero(intervalScores), max(intervalScores))
