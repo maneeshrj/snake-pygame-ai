@@ -148,15 +148,19 @@ if __name__ == "__main__":
         print(f"{torch.cuda.device_count()} GPU(s) available.")
     else:
         print('No GPUs available, using CPU.')
-
+    
+    stats = dict()
     # Training Setup
     BATCH_SIZE = 128    # Originally 128
     GAMMA = 0.8
-    EPS_START = 0.01
-    EPS_END = 0.01
+    EPS_START = 0.9
+    EPS_END = 0.05
     EPS_DECAY = 200
     # EPS_DECAY = num_episodes // 4
     TARGET_UPDATE = 10
+    
+    stats['BATCH_SIZE'], stats['GAMMA'], stats['EPS_START'], stats['EPS_END'], stats['EPS_DECAY'], stats['TARGET_UPDATE'] = \
+        BATCH_SIZE, GAMMA, EPS_START, EPS_END, EPS_DECAY, TARGET_UPDATE
     
     # Restore weights from this path
     model_path = 'DQN_50000_epochs.pth'
@@ -182,7 +186,6 @@ if __name__ == "__main__":
     # steps_done = 0
 
     learningTrial = Trial()
-    stats = dict()
     stats['lengths'], stats['scores'], stats['times'] = [], [], []
     run_data = []
     print("Starting Training")
@@ -287,10 +290,14 @@ if __name__ == "__main__":
     
     print('Training Complete')
     
+    date = datetime.datetime.now()
+    model_name = f"models/dqn_{num_episodes}ep_{date.strftime('%d%b_%H%M')}"
     if save_model:        
-        x = datetime.datetime.now()
-        torch.save(target_net.state_dict(), f"DQN_{num_episodes}ep_{x.strftime('%d%b_%H%M')}.pth")
-        print(f"Saved model to DQN_{num_episodes}ep_{x.strftime('%d%b_%H%M')}.pth")
+        torch.save(target_net.state_dict(), f"{model_name}.pth")
+        print(f"Saved model to {model_name}.pth")
+        
+        with open(f"{model_name}_stats.json", "w") as f:
+            f.write(json.dumps(stats))
     
     if record_data:
         # Save the run data
@@ -300,6 +307,3 @@ if __name__ == "__main__":
             writer.writerow(['time', 'score', 'eps', 'loss'])
             writer.writerows(run_data)
             print("Saved run data to run_data.csv")
-        
-    with open(f"dqn_{num_episodes}_stats.json", "w") as f:
-        f.write(json.dumps(stats))
