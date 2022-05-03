@@ -9,7 +9,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torchvision.transforms as T
 import math
-import time
+import time, datetime
 import argparse
 import csv, json
 
@@ -135,6 +135,7 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--save', action='store_true', help='save model')
     parser.add_argument('-r', '--random_food', action='store_true', help='random food')
     parser.add_argument('-d', '--record_data', action='store_true', help='record run data')
+    parser.add_argument('-l', '--load', action='store_true', help='load saved model')
 
     args = parser.parse_args()
     num_episodes = args.episodes
@@ -151,11 +152,14 @@ if __name__ == "__main__":
     # Training Setup
     BATCH_SIZE = 128    # Originally 128
     GAMMA = 0.8
-    EPS_START = 0.90
-    EPS_END = 0.05
+    EPS_START = 0.01
+    EPS_END = 0.01
     EPS_DECAY = 200
-    # EPS_DECAY = num_episodes // 2
+    # EPS_DECAY = num_episodes // 4
     TARGET_UPDATE = 10
+    
+    # Restore weights from this path
+    model_path = 'DQN_50000_epochs.pth'
 
     grid_height = grid_width = 10
 
@@ -164,6 +168,11 @@ if __name__ == "__main__":
 
     policy_net = DQN((grid_height, grid_width, 1), n_actions).to(device)
     target_net = DQN((grid_height, grid_width, 1), n_actions).to(device)
+    
+    if args.load:
+        policy_net.load_state_dict(torch.load(model_path, map_location=device))
+        print('Resuming training from', model_path)
+    
     target_net.load_state_dict(policy_net.state_dict())
     target_net.eval()
 
@@ -264,7 +273,7 @@ if __name__ == "__main__":
         if record_data:
             run_data.append([epochTimes[-1], score, curr_eps, loss])
             
-        if ep % (num_episodes // 10) == 0:
+        if ep % (num_episodes // 10) == 0 or ep == 1:
             epSummary = '\nEpoch {:<3d}\tAvg_score={:<3.2f}\tNonzeros={:d}\tMax={:<3d}'.format(ep, np.mean(intervalScores), np.count_nonzero(intervalScores), max(intervalScores))
             epSummary += '\nAvg_len={:<.2f}\tMax_len={:<4d}\teps={:<.2f}\t({:<.2f} sec/ep)'.format(np.mean(intervalLengths),max(intervalLengths),curr_eps, np.mean(epochTimes))
             # print('Scores:', intervalScores)
@@ -278,9 +287,10 @@ if __name__ == "__main__":
     
     print('Training Complete')
     
-    if save_model:
-        torch.save(target_net.state_dict(), f'DQN_{num_episodes}_epochs.pth')
-        print(f"Saved model to DQN_{num_episodes}_epochs.pth")
+    if save_model:        
+        x = datetime.datetime.now()
+        torch.save(target_net.state_dict(), f"DQN_{num_episodes}ep_{x.strftime('%d%b_%H%M')}.pth")
+        print(f"Saved model to DQN_{num_episodes}ep_{x.strftime('%d%b_%H%M')}.pth")
     
     if record_data:
         # Save the run data

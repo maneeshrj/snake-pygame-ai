@@ -1,5 +1,6 @@
 import pygame, sys, time, random, copy, util
 import numpy as np
+from util import distance
 
 # Defalut colors for graphics
 COLORS = {
@@ -128,7 +129,7 @@ class GameState:
 		# otherwise default reward
         if step == 1000:
             self.timeout = True	# gameover if stuck in a loop
-        return -0.001
+        return -0.001*distance(self.pos[0], self.foodPos)
 
     def __hash__(self):
         """

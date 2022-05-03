@@ -4,7 +4,7 @@
   "testRuns": 100,
   "verbose": false,
   "screenSize": "small",
-  "randomFood": false,
+  "randomFood": true,
   "agents": [
     "dqn",
     "random"
@@ -12,6 +12,6 @@
   "checkpoints": {
       "exactq": "",
       "approxq": "approxq_weights_3.pkl",
-      "dqn": "DQN_1000_epochs.pth"
+      "dqn": "DQN_50000_epochs.pth"
   }
 }
