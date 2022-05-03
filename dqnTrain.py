@@ -205,9 +205,9 @@ if __name__ == "__main__":
 
         # The state is the game frame stacked on top of the next state frame
         start_matrix = game.getCurrentState().getAsMatrix()
-        next_matrix = game.getNextState("CONTINUE").getAsMatrix()
-        state = torch.tensor(np.dstack((start_matrix, next_matrix)), dtype=torch.float)
-        # state = torch.tensor(start_matrix, dtype=torch.float).unsqueeze(-1)
+        # next_matrix = game.getNextState("CONTINUE").getAsMatrix()
+        # state = torch.tensor(np.dstack((start_matrix, next_matrix)), dtype=torch.float)
+        state = torch.tensor(start_matrix, dtype=torch.float).unsqueeze(-1)
         state = state.unsqueeze(0)
 
         t = 0

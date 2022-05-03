@@ -1,7 +1,7 @@
 {
   "useGraphics": false,
   "plain": true,
-  "testRuns": 40,
+  "testRuns": 1000,
   "verbose": false,
   "screenSize": "small",
   "randomFood": false,
@@ -12,6 +12,6 @@
   "checkpoints": {
       "exactq": "",
       "approxq": "approxq_weights_3.pkl",
-      "dqn": "DQN_5000_epochs.pth"
+      "dqn": "DQN_10000_epochs.pth"
   }
 }
