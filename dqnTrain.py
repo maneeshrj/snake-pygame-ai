@@ -150,11 +150,11 @@ if __name__ == "__main__":
 
     # Training Setup
     BATCH_SIZE = 128    # Originally 128
-    GAMMA = 0.800
+    GAMMA = 0.8
     EPS_START = 0.9
-    EPS_END = 0.15
-    # EPS_DECAY = 1000
-    EPS_DECAY = num_episodes // 4
+    EPS_END = 0.05
+    EPS_DECAY = 2000
+    # EPS_DECAY = num_episodes // 2
     TARGET_UPDATE = 10
 
     grid_height = grid_width = 10
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     target_net.eval()
 
     optimizer = optim.RMSprop(policy_net.parameters())
-    memory = ReplayMemory(20000)
+    memory = ReplayMemory(10000)
 
     # steps_done = 0
 
@@ -177,7 +177,7 @@ if __name__ == "__main__":
     run_data = []
     print("Starting Training")
     
-    intervalLosses, intervalScores, epochTimes = [], [], []
+    intervalLengths, intervalScores, epochTimes = [], [], []
     for ep in range(1, num_episodes+1):
         start_time = time.time()
         
@@ -192,7 +192,7 @@ if __name__ == "__main__":
             if ep % (num_episodes // 5) == 0:
                 trainGraphics = True
         
-        if random_food:
+        if random_food and (ep > num_episodes//2):
             game = Game(gameState, graphics=trainGraphics, plain=True, randomFood=True, framerate=5)
         else:
             game = Game(gameState, graphics=trainGraphics, plain=True, 
@@ -251,7 +251,7 @@ if __name__ == "__main__":
         game.gameOver()
         
         intervalScores.append(score)
-        intervalLosses.append(loss)
+        intervalLengths.append(t)
         epochTimes.append((time.time() - start_time))
         
         #episode_durations.append(t + 1)
@@ -261,13 +261,13 @@ if __name__ == "__main__":
         curr_eps = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * ep / EPS_DECAY)
         # Time, score, eps
         if record_data:
-            run_data.append([epochTimes[-1], score, curr_eps, loss])
+            run_data.append([round(epochTimes[-1],3), score, round(curr_eps,2), round(loss,4)])
             
         if ep % (num_episodes // 10) == 0:
             epSummary = '\nEpoch {:<3d}\tAvg_score={:<3.2f}\tNonzeros={:d}\tMax={:<3d}'.format(ep, np.mean(intervalScores), np.count_nonzero(intervalScores), max(intervalScores))
-            epSummary += '\nAvg_loss={:<.2f}\teps={:<.2f}\t({:<.2f} sec/ep)'.format(np.mean(np.where(intervalLosses != None)),curr_eps, np.mean(epochTimes))
+            epSummary += '\nAvg_len={:<.2f}\tMax_len={:<4d}\teps={:<.2f}\t({:<.2f} sec/ep)'.format(np.mean(intervalLengths),max(intervalLengths),curr_eps, np.mean(epochTimes))
             # print('Scores:', intervalScores)
-            intervalScores, intervalLosses, epochTimes = [], [], []
+            intervalScores, intervalLengths, epochTimes = [], [], []
             print(epSummary)
             
     

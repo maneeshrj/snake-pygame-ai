@@ -128,7 +128,7 @@ class GameState:
 		# otherwise default reward
         if step == 1000:
             self.timeout = True	# gameover if stuck in a loop
-        return -0.1
+        return -0.001
 
     def __hash__(self):
         """
@@ -246,6 +246,8 @@ class Game:
                     for j in range((self.frameY//10)):
                         self.foodPosList.append([i*10, j*10])
                 rng.shuffle(self.foodPosList)
+            # self.foodPosList = self.foodPosList[0:5]
+        # print(self.foodPosList, '\n')
         
         # Have to set food pos outside of init otherwise we pop the first element
         # before we have a chance to set the foodPosList in the trial
