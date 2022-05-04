@@ -14,6 +14,8 @@ torch==1.11.0
 
 torchvision==0.12.0
 
+Check `requirements.txt` for a full list of packages.
+
 # How to run
 ## To play the game manually
 In order to play the game as a human player, run `python3 userAgent.py`.
