@@ -52,6 +52,8 @@ In order to play the game as a human player, run `python3 userAgent.py`.
 
 `python3 test.py -a random reflex exactq approxq -n 5 -g`
 
+Note: If torchvision throws an error, make sure to activate the environment: source venv/bin/activate
+
 Note: DQNAgent is not included in the above list because it has a small chance of getting stuck in an infinite loop.
 The game will timeout after many steps, but this is boring to watch with graphics turned on.
 
