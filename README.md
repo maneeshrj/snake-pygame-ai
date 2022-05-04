@@ -125,9 +125,9 @@ Flags:
 
 _Example Commands:_
 
-**Train Exact-Q Agent for 5000 runs with fixed food spawning:**
+**Train DQN Agent for 5000 runs with fixed food spawning:**
 
 `python3 dqnTrain.py -e 5000 -s`
 
-Note: Model & Stats files will be generated in `models/`
+Note: Model & stats files will be saved in `models/`
 
