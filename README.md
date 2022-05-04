@@ -20,7 +20,7 @@ In order to play the game as a human player, run `python3 userAgent.py`.
 
 ## To run testing (located in `test.py`)
 
-_Flags:_
+### Flags:
 
 `-a {String}`, `--agent {String}` (options: "random", "reflex", "exactq", "approxq", "dqn")
 
@@ -44,7 +44,7 @@ _Flags:_
 
 `--load_approxq {Filename}` (For appro q agent, specify which model to load)
 
-_Example Commands:_
+### Example Commands:
 
 **Test all agents with graphics for 5 runs each (random food spawning):**
 
@@ -71,7 +71,7 @@ Note: This agent may get stuck in a loop, and if it does, it will run until the 
 
 ## To run training for a Q-learning agent (located in `qLearningTrain.py`)
 
-_Flags:_
+### Flags:
 
 `-a {String}` (Agent to use)
 
@@ -93,7 +93,7 @@ _Flags:_
 
 `--save_filename {Filename}` (Filename for saving weights)
 
-_Example Commands:_
+### Example Commands:
 
 **Train Exact-Q Agent for 5000 runs:**
 
@@ -109,7 +109,7 @@ Note: Weights will be saved to `SRC/`
 
 **To run training for a DQN agent (located in `dqnTrain.py`)**
 
-Flags:
+### Flags:
 
 `-e {Integer}`, `--episodes {Integer}` (number of episodes to train for)
 
@@ -123,7 +123,7 @@ Flags:
 
 `-l`, `--load` (load saved model)
 
-_Example Commands:_
+### Example Commands:
 
 **Train DQN Agent for 5000 runs with fixed food spawning:**
 
