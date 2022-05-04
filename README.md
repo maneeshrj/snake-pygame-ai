@@ -61,7 +61,7 @@ The game will timeout after many steps, but this is boring to watch with graphic
 
 Observation: Note how differently these agents act with fixed food spawning.
 
-**Test DQN agent with graphics for 1 run (random food spawn)**
+**Test DQN agent with graphics for 4 runs (random food spawn)**
 
 `python3 test.py -a dqn -n 1 -g`
 
