@@ -1,0 +1,20 @@
+{
+  "useGraphics": false,
+  "plain": true,
+  "testRuns": 1000,
+  "verbose": false,
+  "screenSize": "small",
+  "randomFood": true,
+  "agents": [
+    "random",
+    "reflex",
+    "exactq",
+    "approxq",
+    "dqn"
+  ],
+  "checkpoints": {
+      "exactq": "exactq_values.pkl",
+      "approxq": "approxq_weights.pkl",
+      "dqn": "models/DQN_50000_random.pth"
+  }
+}

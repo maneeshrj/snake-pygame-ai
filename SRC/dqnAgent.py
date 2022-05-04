@@ -56,8 +56,6 @@ class DQNAgent:
             # found, so we pick action with the larger expected reward.
 
             start_matrix = self.gameState.getAsMatrix()
-            # next_matrix = self.gameState.getSuccessor('CONTINUE').getAsMatrix()
-            # state = torch.tensor(np.dstack((start_matrix, next_matrix)), device=device, dtype=torch.float)
             state = torch.tensor(start_matrix, device=device, dtype=torch.float).unsqueeze(-1)
             state = state.unsqueeze(0)
             return tensor_to_action(select_action(state, self.gameState.getValidActions(), -1, self.net))

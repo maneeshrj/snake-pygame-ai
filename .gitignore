@@ -165,11 +165,7 @@ cython_debug/
 .vscode
 .history
 .idea
-*.pth
 *.csv
-
-# The directory where dqn models are saved
-models/
 
 # Log directories
 tensorboard_log/

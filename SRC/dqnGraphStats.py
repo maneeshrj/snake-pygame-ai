@@ -18,7 +18,7 @@ if __name__ == "__main__":
     
     parser.add_argument("-l", "--load", help="Load json file containing stats", type=str, default=None)
     args = parser.parse_args()
-    json_fname = 'dqn_50000_stats.json'
+    json_fname = 'models/dqn_50000_stats.json'
     # json_fname = args.load
     
     with open(json_fname, 'r') as f:

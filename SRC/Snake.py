@@ -48,9 +48,6 @@ class GameState:
         """
         self.pos.insert(0, list(self.pos[0]))  # duplicate head
 
-        # NOTE: If the action is valid, snake's current direction will be updated
-        # If the action is invalid, snake's direction will remain the same as the
-        # last timestep (i.e. the action will default to CONTINUE)
         if (action != 'CONTINUE') and (self.isValidAction(action)):
             self.direction = action
         if self.direction == 'UP':
@@ -115,7 +112,7 @@ class GameState:
         nextState.moveSnake(action)
         return nextState
 
-    def getReward(self, action, step=0):
+    def getRewardDQN(self, action, step=0):
         """
         Returns a numerical reward for taking an action from the current state
         """
@@ -131,14 +128,23 @@ class GameState:
             self.timeout = True	# gameover if stuck in a loop
         return -0.001*distance(self.pos[0], self.foodPos)
 
+    def getRewardQ(self, action, step=0):
+        if step == 10000:
+            self.timeout = True
+            return -10.0
+        nextState = self.getSuccessor(action)
+        if (nextState.reachedFood()):
+            return 10.
+        if (nextState.isGameOver()):
+            return -1000.
+        return -0.001
+
     def __hash__(self):
         """
         Returns a hash of the game state object.
         Uses only snake position, food position, and direction for hashing.
         """
-        # TODO: Hash the attributes of the state for qlearning dictionary lookup
         tup = (str(self.pos), tuple(self.foodPos), self.direction)
-        # print(tup)
         return hash(tup)
 
     def __eq__(self, other):
@@ -164,7 +170,6 @@ class GameState:
         for i, snakePos in enumerate(self.pos):
             snakeX = snakePos[0] // 10
             snakeY = snakePos[1] // 10
-            # print(snakeX, snakeY)
             if snakeX >= 0 and snakeX < matrix.shape[0]:
                 if snakeY >= 0 and snakeY < matrix.shape[1]:
                     if i == 0:
@@ -247,12 +252,6 @@ class Game:
                     for j in range((self.frameY//10)):
                         self.foodPosList.append([i*10, j*10])
                 rng.shuffle(self.foodPosList)
-            # self.foodPosList = self.foodPosList[0:5]
-        # print(self.foodPosList, '\n')
-        
-        # Have to set food pos outside of init otherwise we pop the first element
-        # before we have a chance to set the foodPosList in the trial
-        # self.setFoodPos()
 
         # Check for errors
         if (self.graphics):
@@ -280,7 +279,6 @@ class Game:
 
         self.gameState.foodPos = self.foodPos
         self.gameState.foodSpawned = True
-        # print(self.gameState.getAsMatrix())
         
     # For an action the snake takes, update the game state
     def playStep(self, action):
@@ -347,8 +345,11 @@ class Game:
     def getNextState(self, action):
         return self.gameState.getSuccessor(action)
 
-    def getReward(self, action, step=0):
-        return self.gameState.getReward(action, step)
+    def getRewardQ(self, action, step=0):
+        return self.gameState.getRewardQ(action, step)
+
+    def getRewardDQN(self, action, step=0):
+        return self.gameState.getRewardDQN(action, step)
 
     def getScreenAsNumpy(self):
         # Get the current pygame window as a numpy array

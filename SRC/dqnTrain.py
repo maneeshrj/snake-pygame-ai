@@ -133,7 +133,7 @@ if __name__ == "__main__":
     parser.add_argument('-e', '--episodes', type=int, default=100, help='number of episodes to train for')
     parser.add_argument('-g', '--graphics', action='store_true', help='show graphics')
     parser.add_argument('-s', '--save', action='store_true', help='save model')
-    parser.add_argument('-r', '--random_food', action='store_true', help='random food')
+    parser.add_argument('-r', '--random_food', action='store_true', help='spawn food randomly')
     parser.add_argument('-d', '--record_data', action='store_true', help='record run data')
     parser.add_argument('-l', '--load', action='store_true', help='load saved model')
 
@@ -183,8 +183,6 @@ if __name__ == "__main__":
     optimizer = optim.RMSprop(policy_net.parameters())
     memory = ReplayMemory(20000)
 
-    # steps_done = 0
-
     learningTrial = Trial()
     stats['lengths'], stats['scores'], stats['times'] = [], [], []
     run_data = []
@@ -218,8 +216,6 @@ if __name__ == "__main__":
 
         # The state is the game frame stacked on top of the next state frame
         start_matrix = game.getCurrentState().getAsMatrix()
-        # next_matrix = game.getNextState("CONTINUE").getAsMatrix()
-        # state = torch.tensor(np.dstack((start_matrix, next_matrix)), dtype=torch.float)
         state = torch.tensor(start_matrix, dtype=torch.float).unsqueeze(-1)
         state = state.unsqueeze(0)
 
@@ -233,15 +229,11 @@ if __name__ == "__main__":
             gameOver, score = game.playStep(action_str)
             reward = torch.tensor([reward], device=device, dtype=torch.float)
 
-            # last_matrix = next_matrix
             next_matrix = game.getCurrentState().getAsMatrix()
 
             if not gameOver:
-                # print(t)
-                # next_state = torch.tensor(np.dstack((start_matrix, next_matrix)), dtype=torch.float)
                 next_state = torch.tensor(next_matrix, dtype=torch.float).unsqueeze(-1)
                 next_state = next_state.unsqueeze(0)
-                # print(next_state.shape)
             else:
                 next_state = None
                 # Mute for training on ARGON:
@@ -267,19 +259,16 @@ if __name__ == "__main__":
         intervalLengths.append(t)
         epochTimes.append(round(time.time()-start_time, 4))
         
-        #episode_durations.append(t + 1)
         if ep % TARGET_UPDATE == 0:
             target_net.load_state_dict(policy_net.state_dict())
             
         curr_eps = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * ep / EPS_DECAY)
-        # Time, score, eps
         if record_data:
             run_data.append([epochTimes[-1], score, curr_eps, loss])
             
         if ep % (num_episodes // 10) == 0 or ep == 1:
             epSummary = '\nEpoch {:<3d}\tAvg_score={:<3.2f}\tNonzeros={:d}\tMax={:<3d}'.format(ep, np.mean(intervalScores), np.count_nonzero(intervalScores), max(intervalScores))
             epSummary += '\nAvg_len={:<.2f}\tMax_len={:<4d}\teps={:<.2f}\t({:<.2f} sec/ep)'.format(np.mean(intervalLengths),max(intervalLengths),curr_eps, np.mean(epochTimes))
-            # print('Scores:', intervalScores)
             stats['scores'] += intervalScores
             stats['lengths'] += intervalLengths
             stats['times'] += epochTimes
@@ -287,7 +276,6 @@ if __name__ == "__main__":
             intervalScores, intervalLengths, epochTimes = [], [], []
             print(epSummary)
             
-    
     print('Training Complete')
     
     date = datetime.datetime.now()

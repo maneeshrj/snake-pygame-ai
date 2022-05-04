@@ -1,50 +1,133 @@
-# Snake Eater
+# Snake
 A snake game written in Python using the Pygame library, with implementations for different intelligent agents to play the game.
 
+# Dependencies
+Use Python 3.7 or above
 
-## Installing
-Download the Python 3 installer package from the official website and install it, if not installed previously.
+matplotlib==3.5.1
 
-Run the following in the terminal to install the Pygame library
-```
-pip3 install pygame
-```
+numpy==1.22.3
 
+pygame==2.1.2
 
-## Running the application
-Download the source code from the repository and run the file just as any other Python script (.py) file.
-```
-python3 Snake\ Game.py
-```
+torch==1.11.0
 
-The `difficulty` variable can be changed with the values provided in the comment to set the difficulty level.
+torchvision==0.12.0
 
-The rest of the code is properly commented and self explanatory. Tweaks can be made to change the play style or visuals of the game.
+# How to run
+## To play the game manually
+In order to play the game as a human player, run `python3 userAgent.py`.
 
+## To run testing (located in `test.py`)
 
-## Screenshots
+_Flags:_
 
-![1](https://user-images.githubusercontent.com/32998741/33873439-27f635b2-df45-11e7-8fc1-f7812f17447a.png)
-*Written using PyCharm*
+`-a {String}`, `--agent {String}` (options: "random", "reflex", "exactq", "approxq", "dqn")
 
-![2](https://user-images.githubusercontent.com/32998741/33873437-2780ed2a-df45-11e7-9776-b1f151fa4e02.png)
-*Active game screen*
+`-n {Integer}`, `--num_runs {Integer}`
 
-![3](https://user-images.githubusercontent.com/32998741/33873440-28647360-df45-11e7-8291-b82d5646352f.png)
-*Game over screen*
+`-v`, `--verbose` (Extra detail per test run)
 
+`-g`, `--graphics` (Turn on graphics for testing)
 
-## Prerequisites
-* [Python](https://www.python.org)
-* [Pygame](https://www.pygame.org/wiki/GettingStarted), an open source Python library for making multimedia applications
+`-p`, `--plain` (Show no score on graphics)
 
+`-j`, `--json` (run settings from _testSettings.json_)
 
-## Authors
+`-f {Integer}`, `--framerate {Integer}` (change the framerate of the game)
 
-* **Rajat Dipta Biswas** - *Initial work*
+`-ff`, `--fixed_food` (Turn off random food spawning)
 
-See also the list of [contributors](https://github.com/rajatdiptabiswas/snake-pygame/graphs/contributors) who participated in this project.
+`--load_dqn {Filename}` (For dqn, specify which model to load)
 
-## Acknowledgements
-* [Pygame Documentations](https://www.pygame.org/docs/)
-* [Udemy: Python Game Development](https://www.udemy.com/python-game-development-creating-a-snake-game-from-scratch/learn/v4/overview)
+`--load_exactq {Filename}` (For exact q agent, specify which model to load)
+
+`--load_approxq {Filename}` (For appro q agent, specify which model to load)
+
+_Example Commands:_
+
+**Test all agents with graphics for 5 runs each (random food spawning):**
+
+`python3 test.py -a random reflex exactq approxq -n 5 -g`
+
+Note: DQNAgent is not included in the above list because it has a small chance of getting stuck in an infinite loop.
+The game will timeout after many steps, but this is boring to watch with graphics turned on.
+
+**Test Exact-Q & DQN agent with graphics for 5 runs each (fixed food spawning):**
+
+`python3 test.py -a exactq dqn -n 5 -g -ff --load_dqn models/DQN_10000_fixed.pth`
+
+Observation: Note how differently these agents act with fixed food spawning.
+
+**Test DQN agent with graphics for 1 run (random food spawn)**
+
+`python3 test.py -a dqn -n 1 -g`
+
+Note: This agent may get stuck in a loop, and if it does, it will run until the game times out.
+
+**Test Random Agent for 1000 runs:**
+
+`python3 test.py -a random -n 1000`
+
+## To run training for a Q-learning agent (located in `qLearningTrain.py`)
+
+_Flags:_
+
+`-a {String}` (Agent to use)
+
+`-n {Integer}` (Number of training episodes)
+
+`-t {Integer}` (Number of test runs)
+
+`-g` (Use graphics)
+
+`-v` (Verbose output)
+
+`-l` (Load checkpoint from pickle file)
+
+`-s` (Save trained weights or qvalues)
+
+`-r` (Random food spawn during testing)
+
+`--checkpoint {Filename}` (Filename of checkpoint to load)
+
+`--save_filename {Filename}` (Filename for saving weights)
+
+_Example Commands:_
+
+**Train Exact-Q Agent for 5000 runs:**
+
+`python3 qLearningTrain.py -a q -n 5000 -t 20 -s --save_filename exactq.pkl`
+
+Note: Weights will be saved to `SRC/`
+
+**Train Approximate-Q Agent for 5000 runs:**
+
+`python3 qLearningTrain.py -a approxq -n 5000 -t 20 -s --save_filename approxq.pkl`
+
+Note: Weights will be saved to `SRC/`
+
+**To run training for a DQN agent (located in `dqnTrain.py`)**
+
+Flags:
+
+`-e {Integer}`, `--episodes {Integer}` (number of episodes to train for)
+
+`-g`, `--graphics` (show graphics)
+
+`-s`, `--save` (save model)
+
+`-r`, `--random_food` (spawn food randomly)
+
+`-d`, `--record_data` (record run data as csv file)
+
+`-l`, `--load` (load saved model)
+
+_Example Commands:_
+
+**Train Exact-Q Agent for 5000 runs with fixed food spawning:**
+
+`python3 dqnTrain.py -e 5000 -s`
+
+Note: Model & Stats files will be generated in `models/`
+

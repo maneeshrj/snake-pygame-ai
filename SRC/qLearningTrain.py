@@ -79,8 +79,9 @@ class Trainer:
         self.testingTrial = testingTrial
 
         for i in range(testRuns):
-            if i % (testRuns // 5) == 0:
+            if verbose and (testRuns > 4) and (i % (testRuns // 5) == 0):
                 print(f"\nFinished test {i} of {testRuns}.")
+
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT',
                                   frameSizeX=100, frameSizeY=100)
             game = Game(gameState=gameState, graphics=graphics, plain=True, framerate=10,
@@ -115,8 +116,10 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--test_runs", help="Number of test runs", type=int, default=10)
     parser.add_argument("-g", "--graphics", help="Use graphics", action="store_true", default=False)
     parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true")
-    parser.add_argument("-l", "--load", help="Load qvalues from pickle file", action="store_true")
-    parser.add_argument("-s", "--save_weights", help="Save trained weights", action="store_true")
+    parser.add_argument("--checkpoint", help="Filename of checkpoint to load", type=str, default='checkpoint.pkl')
+    parser.add_argument("--save_filename", help="Filename for saving weights", type=str, default='checkpoint.pkl')
+    parser.add_argument("-l", "--load_weights", help="Load checkpoint from pickle file", action="store_true")
+    parser.add_argument("-s", "--save_weights", help="Save trained weights or qvalues", action="store_true")
     parser.add_argument("-r", "--test_random", help="Random food spawn during testing", action="store_true")
 
     args = parser.parse_args()
@@ -124,8 +127,10 @@ if __name__ == "__main__":
     numEpisodes = args.num_episodes
     testRuns = args.test_runs
     verbose = args.verbose
-    loadQValues = args.load
-    saveWeights= args.save_weights
+    load = args.load_weights
+    checkpoint = args.checkpoint
+    saveFilename = args.save_filename
+    saveWeights = args.save_weights
     testRandom = args.test_random
     trainRandom = True
     graphics = args.graphics
@@ -133,13 +138,11 @@ if __name__ == "__main__":
     if agentType == "q":
         agent = QLearningAgent()
         trainRandom = False
-        saveFilename = 'qvalues.pkl'
     elif agentType == "approxq":
         agent = ApproxQAgent()
-        saveFilename = 'approxq_weights.pkl'
     
-    if loadQValues:
-        agent.loadCheckpoint(saveFilename)
+    if load:
+        agent.loadCheckpoint(checkpoint)
             
     if agentType == 'approxq':
         print('\nInitial weights: ', agent.weights)
