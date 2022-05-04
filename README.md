@@ -107,7 +107,7 @@ Note: Weights will be saved to `SRC/`
 
 Note: Weights will be saved to `SRC/`
 
-**To run training for a DQN agent (located in `dqnTrain.py`)**
+## To run training for a DQN agent (located in `dqnTrain.py`)
 
 ### Flags:
 
