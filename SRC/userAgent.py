@@ -69,7 +69,7 @@ direction = 'RIGHT'
 changeTo = direction
 
 score = 0
-
+step = 0
 
 # Game over
 def game_over():
@@ -93,9 +93,23 @@ def game_over():
     scores.append(score)
     with open('manualGameScores.json', 'w') as f:
         json.dump(scores, f)
+    
+    # Keep running average of manually played steps
+    steps = None
+    with open('manualGameSteps.json', 'r') as f:
+        steps = json.load(f)
+    if reset:
+        steps = []
+    steps.append(step)
+    with open('manualGameSteps.json', 'w') as f:
+        json.dump(steps, f)
+    
 
+    print(f"{len(scores)} Games played")
     print('Scores:', scores)
-    print('Avg score:', sum(scores) / len(scores))
+    print('Avg score:', round(sum(scores)/len(scores), 3))
+    print('Steps:', steps)
+    print('Avg steps:', round(sum(steps)/len(steps), 3))
     sys.exit()
 
 
@@ -131,6 +145,8 @@ while True:
                 changeTo = 'RIGHT'
             if event.key == pygame.K_ESCAPE:
                 pygame.event.post(pygame.event.Event(pygame.QUIT))
+    
+    step += 1
 
     # Making sure the snake cannot move in the opposite direction instantaneously
     if changeTo == 'UP' and direction != 'DOWN':

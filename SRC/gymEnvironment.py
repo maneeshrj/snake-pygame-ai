@@ -21,11 +21,12 @@ class CustomSnakeEnv(gym.Env):
     CONTINUE = 2
     TIMEOUT_LIM = 200
     
-    def __init__(self, width=10, height=10, n_food=1):
+    def __init__(self, width=10, height=10, n_food=1, graphics=False):
         super(CustomSnakeEnv, self).__init__()
         # Define the action and observation space
         # They must be gym.spaces objects
 
+        self.graphics = graphics
         self.grid_size = (width, height)
         self.snake_full_pos = [[2, 4], [2, 3], [2, 2]]
         self.snake_head = self.snake_full_pos[0].copy()
@@ -54,7 +55,10 @@ class CustomSnakeEnv(gym.Env):
         
         # The snake lives in a grid of size width x height with food on the grid
         # possible values are 0 (empty cell) and 1 (snake) and 2 (food)
-        self.observation_space = spaces.Box(low=0, high=2, shape=(width*height, ), dtype=np.float32)
+        if self.graphics:
+            self.observation_space = spaces.Box(low=0, high=255, shape=(height*10, width*10, 3), dtype=np.uint8)
+        else:
+            self.observation_space = spaces.Box(low=0, high=2, shape=(width*height, ), dtype=np.float32)
 
     def set_grid(self):
         self.grid = np.zeros(self.grid_size)
@@ -112,7 +116,11 @@ class CustomSnakeEnv(gym.Env):
         self.timed_out = False
         self.set_grid()
         self.draw_grid_on_canvas()
-        return np.array(self.grid).astype(np.float32).flatten()
+
+        if self.graphics:
+            return self.canvas
+        else:
+            return np.array(self.grid).astype(np.float32).flatten()
 
     def get_snake_direction(self):
         """
@@ -214,7 +222,7 @@ class CustomSnakeEnv(gym.Env):
         reached_food, done = self.move_snake(action)
         reward = -1
         if done:
-            reward = -5
+            reward = -25
         else:
             if reached_food:
                 reward = 10
@@ -237,7 +245,11 @@ class CustomSnakeEnv(gym.Env):
                 "num_episodes": self.num_episodes}
         if self.timed_out:
             info["TimeLimit.truncated"] = True
-        return np.array(self.grid).astype(np.float32).flatten(), reward, done, info
+        
+        if self.graphics:
+            return self.canvas, reward, done, info
+        else:
+            return np.array(self.grid).astype(np.float32).flatten(), reward, done, info
 
     def set_debug_mode(self, debug_mode):
         self.debug_mode = debug_mode
@@ -280,8 +292,9 @@ if __name__ == "__main__":
     parser.add_argument('-dqn', '--dqn', action='store_true', help='Run the environment in DQN mode')
     parser.add_argument('-ppo', '--ppo', action='store_true', help='Run the environment in PPO mode')
     parser.add_argument('-a2c', '--a2c', action='store_true', help='Run the environment in A2C mode')
-    parser.add_argument('-g', '--graphics_mode', type=str, choices=['console', 'human'], default='console', help='Graphics mode')
+    parser.add_argument('-rm', '--render_mode', type=str, choices=['console', 'human'], default='console', help='Render mode')
     parser.add_argument('-f', '--num_food', type=int, default=1, help='Number of food items to spawn')
+    parser.add_argument('-cnn', '--cnn', action='store_true', help='Use a CNN in the policy network')
     
     args = parser.parse_args()
     random_mode = args.random
@@ -290,39 +303,44 @@ if __name__ == "__main__":
     use_dqn = args.dqn
     use_ppo = args.ppo
     use_a2c = args.a2c
-    graphics_mode = args.graphics_mode
     num_food = args.num_food
+    render_mode = args.render_mode
+    use_cnn = args.cnn
     if [use_dqn, random_mode, use_ppo, use_a2c].count(True) > 1:
         raise ValueError("Cannot run in multiple modes at the same time")
 
-    env = CustomSnakeEnv(height=grid_size, width=grid_size, n_food=num_food)
+    env = CustomSnakeEnv(height=grid_size, width=grid_size, n_food=num_food, graphics=use_cnn)
+
+    policy = 'MlpPolicy'
+    if use_cnn:
+        policy = 'CnnPolicy'
     # Add a time limit to the environment
 
     env = make_vec_env(lambda: env, n_envs=1)
     obs = env.reset()
     if random_mode:
-        env.render(graphics_mode)
+        env.render(render_mode)
         for _ in range(num_episodes):
             action = env.action_space.sample()
             print("Action: ", action_num_to_str(action))
             obs, reward, done, info = env.step([action])
-            env.render(graphics_mode)
+            env.render(render_mode)
             if done:
                 print("Score: ", info[0]["score"])
                 obs = env.reset()
     else:
         if use_dqn:
-            model = DQN(policy="MlpPolicy", env=env)
+            model = DQN(policy=policy, env=env)
             model.learn(total_timesteps=int(num_episodes))
             mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=100)
             print("Mean Reward:", mean_reward, "Std Reward:", std_reward)
         elif use_ppo:
-            model = PPO(policy="MlpPolicy", env=env)
+            model = PPO(policy=policy, env=env)
             model.learn(total_timesteps=int(num_episodes))
             mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=100)
             print("Mean Reward:", mean_reward, "Std Reward:", std_reward)
         elif use_a2c:
-            model = A2C(policy="MlpPolicy", env=env)
+            model = A2C(policy=policy, env=env)
             model.learn(total_timesteps=int(num_episodes))
             mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=100)
             print("Mean Reward:", mean_reward, "Std Reward:", std_reward)
@@ -341,14 +359,14 @@ if __name__ == "__main__":
             if i % (eval_runs/10) == 0:
                 render = True
                 print("rendering")
-                env.render(graphics_mode)
+                env.render(render_mode)
             while not done:
                 step += 1
                 action, _states = model.predict(obs, deterministic=True)
                 obs, rewards, [done], info = env.step(action)
                 score = info[0]["score"]
                 if render:
-                    env.render(graphics_mode)
+                    env.render(render_mode)
             scores.append(score)
             steps.append(step)
         
