@@ -1,5 +1,6 @@
 # Imports
 from math import sqrt
+import numpy as np
 
 # Hard coded actions forr testing
 def generateFixedActions():
@@ -16,6 +17,13 @@ def distance(a, b):
 # Manhatten distance formula
 def manhattanDistance(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+# Summarizes a list as a shorter list
+def summarizeList(L, n):
+    L1 = []
+    for i in range(len(L)//n):
+        L1.append(np.mean(L[i*n:i*(n+1)]))
+    return L1
 
 # Return the sign of a number
 def sign(x):

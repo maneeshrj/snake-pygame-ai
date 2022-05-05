@@ -107,7 +107,7 @@ if __name__ == "__main__":
         
         timeouts = 0
         for i in range(testRuns):
-            if i % (testRuns // 4) == 0:
+            if testRuns > 100 and i % (testRuns // 100) == 0:
                 print(f"Completed {i} tests.")
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=frameSizeX,
                                   frameSizeY=frameSizeY)

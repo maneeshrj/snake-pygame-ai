@@ -2,6 +2,8 @@ from Snake import Game, GameState, Trial
 from qLearningAgent import QLearningAgent, ApproxQAgent
 import numpy as np
 import argparse, time
+import matplotlib.pyplot as plt
+from util import summarizeList
 
 class Trainer:
     def __init__(self, agent, trainRandom=False, testRandom=False, saveFile='checkpoint.pkl'):
@@ -25,7 +27,8 @@ class Trainer:
         startTime = time.time()
         trainingTrial = Trial()
         self.trainingTrial = trainingTrial
-
+        
+        scores, lengths = [], []
         for episode in range(1,trainingEpisodes+1):
             gameState = GameState(pos=[[30, 20], [20, 20], [10, 20]], direction='RIGHT', frameSizeX=100,
                                   frameSizeY=100)
@@ -45,7 +48,9 @@ class Trainer:
                 i += 1
                 action = self.agent.getNextAction()
                 gameOver, score = game.playStep(action)
-
+            
+            scores.append(score)
+            lengths.append(i)
             game.gameOver()
             self.agent.stopEpisode()
 
@@ -65,7 +70,9 @@ class Trainer:
         elapsedTime = round((time.time() - startTime) / 60, 2)
         print('\nTraining completed in', elapsedTime, 'mins.')
         print('Average rewards per training episode:', (self.agent.accumTrainRewards/trainingEpisodes))
-
+        
+        return scores, lengths
+        
     def test(self, testRuns=10, graphics=True, verbose=False):
         """
         Test the agent for the specified number of runs.
@@ -148,8 +155,19 @@ if __name__ == "__main__":
         print('\nInitial weights: ', agent.weights)
             
     trainer = Trainer(agent, trainRandom=trainRandom, testRandom=testRandom, saveFile=saveFilename)
-    trainer.train(trainingEpisodes=numEpisodes, verbose=verbose, saveWeights=saveWeights)
-    trainer.test(testRuns=testRuns, graphics=graphics, verbose=verbose)
+    trainScores, trainLengths = trainer.train(trainingEpisodes=numEpisodes, verbose=verbose, saveWeights=saveWeights)
+    t = range(0, len(trainScores), 500)
+    trainScores, trainLengths = summarizeList(trainScores, 500), summarizeList(trainLengths, 500)
+    
+    fig, ax = plt.subplots(1, 2, figsize=(20,5))
+    ax[0].plot(t, trainScores, 'b')
+    ax[0].set(xlabel='Epochs', ylabel='Score')
+    
+    ax[1].plot(t, trainLengths, 'g')
+    ax[1].set(xlabel='Epochs', ylabel='Game length')
     
     if agentType == 'approxq':
         print('\nFinal weights: ', agent.weights)
+        
+    trainer.test(testRuns=testRuns, graphics=graphics, verbose=verbose)
+    

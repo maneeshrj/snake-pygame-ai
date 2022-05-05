@@ -116,7 +116,7 @@ def game_over():
 # Scoring
 def show_score(choice, color, font, size):
     scoreFont = pygame.font.SysFont(font, size)
-    scoreSurface = scoreFont.render('Score : ' + str(score), True, color)
+    scoreSurface = scoreFont.render(str(score), True, color)
     scoreRect = scoreSurface.get_rect()
     if choice == 1:
         scoreRect.midtop = (frameSizeX / 10, 15)
