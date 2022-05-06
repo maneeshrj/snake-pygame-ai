@@ -1,3 +1,7 @@
+'''
+This training code for DQN is based on the code from: https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
+'''
+
 # Imports
 import matplotlib.pyplot as plt
 import numpy as np
