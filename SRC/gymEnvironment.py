@@ -35,6 +35,8 @@ class CustomSnakeEnv(gym.Env):
         self.food_pos = []
         for i in range(self.n_food):
             self.add_food()
+        if [4, 4] not in self.food_pos:
+            self.food_pos[0] = [3, 2]
         self.set_grid()
         self.canvas = np.ones((height*10, width*10, 3), dtype=np.uint8) # 0 - 255
         
@@ -63,9 +65,12 @@ class CustomSnakeEnv(gym.Env):
     def set_grid(self):
         self.grid = np.zeros(self.grid_size)
         for pos in self.snake_full_pos:
-            self.grid[pos[0], pos[1]] = 1
+            if pos == self.snake_head:
+                self.grid[pos[0], pos[1]] = 2
+            else:
+                self.grid[pos[0], pos[1]] = 1
         for pos in self.food_pos:
-            self.grid[pos[0], pos[1]] = 2
+            self.grid[pos[0], pos[1]] = 3
 
     def draw_grid_on_canvas(self):
         """
@@ -75,12 +80,11 @@ class CustomSnakeEnv(gym.Env):
             for j in range(self.grid_size[1]):
                 if self.grid[i, j] == 0:
                     self.canvas[i*10:(i+1)*10, j*10:(j+1)*10] = [0, 0, 0] # black
-                elif self.grid[i, j] == 1:
-                    if self.snake_head == [i, j]:
-                        self.canvas[i*10:(i+1)*10, j*10:(j+1)*10] = [0, 200, 0] # light green
-                    else:
-                        self.canvas[i*10:(i+1)*10, j*10:(j+1)*10] = [0, 255, 0] # green
                 elif self.grid[i, j] == 2:
+                    self.canvas[i*10:(i+1)*10, j*10:(j+1)*10] = [0, 200, 0] # light green
+                elif self.grid[i, j] == 1:
+                    self.canvas[i*10:(i+1)*10, j*10:(j+1)*10] = [0, 255, 0] # green
+                elif self.grid[i, j] == 3:
                     self.canvas[i*10:(i+1)*10, j*10:(j+1)*10] = [0, 0, 255] # red
     
     def add_food(self):
@@ -110,6 +114,8 @@ class CustomSnakeEnv(gym.Env):
         self.food_pos = []
         for i in range(self.n_food):
             self.add_food()
+        if [4, 4] not in self.food_pos:
+            self.food_pos[0] = [3, 2]
         self.score = 0
         self.steps = 0
         self.num_episodes += 1
@@ -220,12 +226,12 @@ class CustomSnakeEnv(gym.Env):
         # Move the snake on the grid
         self.steps += 1
         reached_food, done = self.move_snake(action)
-        reward = -1
+        reward = -0.3
         if done:
-            reward = -25
+            reward = -5.0
         else:
             if reached_food:
-                reward = 10
+                reward = 10.0
             self.set_grid()
             self.draw_grid_on_canvas()
 
@@ -322,6 +328,7 @@ if __name__ == "__main__":
         env.render(render_mode)
         for _ in range(num_episodes):
             action = env.action_space.sample()
+            print(action)
             print("Action: ", action_num_to_str(action))
             obs, reward, done, info = env.step([action])
             env.render(render_mode)
@@ -356,7 +363,7 @@ if __name__ == "__main__":
             done = False
             step = 0
             # if i multiple of 1/10th the number of eval runs
-            if i % (eval_runs/10) == 0:
+            if i % (eval_runs/4) == 0:
                 render = True
                 print("rendering")
                 env.render(render_mode)
