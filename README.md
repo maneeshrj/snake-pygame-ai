@@ -1,5 +1,5 @@
 # Snake
-A snake game written in Python using the Pygame library, with implementations for different intelligent agents to play the game. Agents include a random agent, reflex agent, Q-learning agent, approximate Q-learning agent, and deep Q-learning agent.
+A snake game written in Python using the Pygame library, with implementations for different intelligent agents to play the game. Agents include a random agent, reflex agent, Q-learning agent, approximate Q-learning agent, and deep Q-learning agent. Based on a project by Maneesh John, Mitchell Hermon, and Raymond Yang for CS:4420 Artificial Intelligence at UIowa.
 
 # Dependencies
 Use Python 3.7 or above
